@@ -1,0 +1,4624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content="Ascension — a browser-only ESP card trainer (Queen tracker, optional Pro five-card), grimoire, and local records. No account; data stays on your device."
+  />
+  <meta name="theme-color" content="#0a0612" id="metaThemeColor" />
+  <title>Ascension — Card Oracle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    (function () {
+      try {
+        if (sessionStorage.getItem("ascension_intro_seen") === "1") {
+          document.documentElement.classList.add("intro-done");
+        }
+      } catch (e) {}
+      try {
+        var mode = localStorage.getItem("ascension_theme") || "dark";
+        if (mode === "system") {
+          document.documentElement.setAttribute(
+            "data-theme",
+            window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark",
+          );
+        } else {
+          document.documentElement.setAttribute("data-theme", mode === "light" ? "light" : "dark");
+        }
+        document.documentElement.setAttribute("data-theme-mode", mode);
+      } catch (e2) {
+        document.documentElement.setAttribute("data-theme", "dark");
+        document.documentElement.setAttribute("data-theme-mode", "dark");
+      }
+      try {
+        var _pal = localStorage.getItem("ascension_palette");
+        if (_pal && _pal !== "default") {
+          document.documentElement.setAttribute("data-palette", _pal);
+        }
+      } catch (e4) {}
+      try {
+        if (localStorage.getItem("ascension_pro_mode") === "1") {
+          document.documentElement.setAttribute("data-pro", "1");
+        } else {
+          document.documentElement.setAttribute("data-pro", "0");
+        }
+      } catch (e5) {}
+      try {
+        function ascensionScreenFromHash() {
+          var raw = (location.hash || "").replace(/^#/, "");
+          if (raw === "game") return "game";
+          if (raw === "records") return "records";
+          if (raw === "pro" || (raw.length >= 3 && raw.indexOf("pro-") === 0)) return "pro";
+          if (
+            raw === "grimoire" ||
+            raw === "page-help" ||
+            (raw.length > 8 && raw.indexOf("grimoire-") === 0)
+          ) {
+            return "grimoire";
+          }
+          return "title";
+        }
+        function applyAscensionAppScreen() {
+          document.documentElement.setAttribute("data-app-screen", ascensionScreenFromHash());
+          if (document.documentElement.getAttribute("data-pro") !== "1") {
+            var h = (location.hash || "").replace(/^#/, "");
+            if (h === "pro" || (h.length >= 3 && h.indexOf("pro-") === 0)) {
+              location.replace(location.pathname + location.search + "#title");
+              return;
+            }
+          }
+          window.requestAnimationFrame(function () {
+            window.scrollTo(0, 0);
+          });
+        }
+        applyAscensionAppScreen();
+        window.addEventListener("hashchange", applyAscensionAppScreen);
+      } catch (e3) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-deep: #0a0612;
+      --bg-panel: rgba(22, 12, 40, 0.72);
+      --accent: #c4a5ff;
+      --accent-hot: #ff9ecd;
+      --gold: #f0d78c;
+      --teal: #7ee8dc;
+      --text: #e8e4f0;
+      --muted: #9b8fb8;
+      --card-face: linear-gradient(145deg, #1e1432 0%, #2d1f4a 50%, #1a1228 100%);
+      --glow: 0 0 28px rgba(196, 165, 255, 0.35);
+      --border-soft: rgba(196, 165, 255, 0.2);
+      --ink-on-accent: #0a0612;
+    }
+
+    html[data-theme="light"] {
+      color-scheme: light;
+      --bg-deep: #ece8f4;
+      --bg-panel: rgba(255, 255, 255, 0.88);
+      --accent: #5b2fa8;
+      --accent-hot: #b03070;
+      --gold: #7a5a0a;
+      --teal: #0a6b5c;
+      --text: #1a1428;
+      --muted: #5c5470;
+      --card-face: linear-gradient(145deg, #f5f0ff 0%, #e8def8 45%, #ddd0f0 100%);
+      --glow: 0 0 20px rgba(91, 47, 168, 0.12);
+      --border-soft: rgba(91, 47, 168, 0.22);
+      --ink-on-accent: #f8f6ff;
+    }
+
+    html[data-theme="light"] body {
+      background-image:
+        radial-gradient(ellipse 120% 80% at 50% -15%, rgba(170, 140, 220, 0.35), transparent),
+        radial-gradient(ellipse 70% 50% at 100% 100%, rgba(255, 160, 190, 0.14), transparent),
+        radial-gradient(ellipse 55% 45% at 0% 85%, rgba(120, 210, 200, 0.12), transparent);
+    }
+
+    html[data-theme="light"] .stars {
+      opacity: 0.22;
+    }
+
+    html[data-theme="light"] header h1 {
+      filter: drop-shadow(0 0 12px rgba(91, 47, 168, 0.25));
+    }
+
+    html[data-theme="light"] .intro-bg {
+      background:
+        radial-gradient(ellipse 100% 80% at 50% 0%, rgba(140, 100, 200, 0.2), transparent 55%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(255, 140, 170, 0.12), transparent),
+        var(--bg-deep);
+    }
+
+    html[data-theme="light"] .card-back {
+      background: linear-gradient(145deg, #e8e0f5, #d8cce8);
+      background-image:
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(90, 60, 130, 0.04) 8px, rgba(90, 60, 130, 0.04) 9px);
+    }
+
+    html[data-theme="light"] .skip-link {
+      color: var(--ink-on-accent);
+    }
+
+    html[data-theme="light"] .intro-enter {
+      color: #1a1428;
+    }
+
+    html[data-theme="light"] .toast {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    html[data-theme="light"] .grimoire {
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.97), rgba(248, 244, 255, 0.94));
+      border-color: rgba(91, 47, 168, 0.14);
+      box-shadow:
+        0 0 32px rgba(91, 47, 168, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    }
+
+    html[data-theme="light"] details.grimoire-part {
+      border-color: rgba(91, 47, 168, 0.18);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    html[data-theme="light"] details.grimoire-part[open] {
+      box-shadow: 0 0 18px rgba(91, 47, 168, 0.08);
+    }
+
+    html[data-theme="light"] .help-section > details.grimoire-part {
+      border-color: rgba(122, 90, 10, 0.25);
+      background: rgba(255, 252, 245, 0.9);
+    }
+
+    html[data-theme="light"] .tagline-help a:hover {
+      color: var(--teal);
+    }
+
+    .header-settings-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.35rem;
+    }
+
+    .btn-settings {
+      font-family: "Quicksand", sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-panel);
+      color: var(--teal);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+
+    .btn-settings:hover {
+      background: rgba(126, 232, 220, 0.12);
+      border-color: var(--teal);
+      transform: translateY(-1px);
+    }
+
+    /* Settings modal */
+    .settings-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 600;
+      background: rgba(0, 0, 0, 0.55);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s;
+    }
+
+    .settings-backdrop.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    html[data-theme="light"] .settings-backdrop {
+      background: rgba(30, 20, 50, 0.25);
+    }
+
+    .settings-modal {
+      position: fixed;
+      z-index: 601;
+      left: 50%;
+      top: 50%;
+      translate: -50% -50%;
+      width: min(420px, calc(100vw - 2rem));
+      max-height: min(88vh, 640px);
+      overflow-y: auto;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-soft);
+      border-radius: 20px;
+      box-shadow: var(--glow), 0 24px 48px rgba(0, 0, 0, 0.35);
+      padding: 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translate(-50%, -50%) scale(0.96);
+      transition: opacity 0.25s ease, visibility 0.25s, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .settings-modal.is-open {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .settings-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 1rem 1.1rem;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .settings-head h2 {
+      font-family: "Cinzel", serif;
+      font-size: 1.05rem;
+      margin: 0;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+    }
+
+    .btn-exit-settings {
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.45rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid var(--accent-hot);
+      background: rgba(255, 158, 205, 0.12);
+      color: var(--accent-hot);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .btn-exit-settings:hover {
+      background: rgba(255, 158, 205, 0.2);
+    }
+
+    .settings-body {
+      padding: 1rem 1.15rem 1.25rem;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .settings-body h3 {
+      font-family: "Cinzel", serif;
+      font-size: 0.82rem;
+      color: var(--teal);
+      margin: 1rem 0 0.5rem;
+      letter-spacing: 0.04em;
+    }
+
+    .settings-body h3:first-child {
+      margin-top: 0;
+    }
+
+    .theme-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .theme-options label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.4rem 0.5rem;
+      border-radius: 10px;
+      border: 1px solid transparent;
+    }
+
+    .theme-options label:hover {
+      background: rgba(196, 165, 255, 0.08);
+    }
+
+    .theme-options input {
+      accent-color: var(--teal);
+    }
+
+    .settings-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .btn-quit-tab {
+      font-family: inherit;
+      font-weight: 600;
+      padding: 0.55rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--muted);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .btn-quit-tab:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    .settings-note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 0.35rem 0 0;
+    }
+
+    /* Intro corner exit */
+    .intro-exit-corner {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 5;
+      font-family: "Quicksand", sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(10, 6, 18, 0.45);
+      color: var(--teal);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+
+    .intro-exit-corner:hover {
+      background: rgba(10, 6, 18, 0.65);
+      border-color: var(--teal);
+    }
+
+    html[data-theme="light"] .intro-exit-corner {
+      background: rgba(255, 255, 255, 0.75);
+      border-color: var(--border-soft);
+      color: var(--teal);
+    }
+
+    .lb-empty {
+      color: var(--muted);
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Quicksand", system-ui, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    html:not(.intro-done) {
+      overflow: hidden;
+    }
+
+    html:not(.intro-done) body {
+      overflow: hidden;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: #0a0612;
+      font-weight: 700;
+      border-radius: 8px;
+      z-index: 200;
+    }
+
+    .skip-link:focus {
+      left: 0.5rem;
+      outline: 2px solid var(--gold);
+    }
+
+    a.skip-link.skip-help:focus {
+      top: 3rem;
+    }
+
+    body {
+      background-image:
+        radial-gradient(ellipse 120% 80% at 50% -20%, rgba(100, 60, 180, 0.35), transparent),
+        radial-gradient(ellipse 80% 50% at 100% 100%, rgba(255, 100, 150, 0.12), transparent),
+        radial-gradient(ellipse 60% 40% at 0% 80%, rgba(120, 230, 220, 0.08), transparent);
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.25), transparent),
+        radial-gradient(1px 1px at 70% 40%, rgba(255,255,255,0.35), transparent),
+        radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.2), transparent),
+        radial-gradient(1px 1px at 50% 90%, rgba(255,255,255,0.3), transparent);
+      background-size: 100% 100%;
+      opacity: 0.6;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 3rem;
+    }
+
+    /* Hub screens — hash: #title #game #grimoire #records #pro */
+    #title,
+    #game,
+    #grimoire,
+    #records,
+    #pro {
+      display: none;
+    }
+
+    html[data-app-screen="title"] #title,
+    html[data-app-screen="game"] #game,
+    html[data-app-screen="grimoire"] #grimoire,
+    html[data-app-screen="records"] #records,
+    html[data-app-screen="pro"] #pro {
+      display: block;
+    }
+
+    .hub-hero {
+      text-align: center;
+      margin-bottom: 1.35rem;
+      padding-top: 0.35rem;
+    }
+
+    .hub-hero-art {
+      margin: 0 auto 1.1rem;
+      max-width: 220px;
+    }
+
+    .hub-title-card-back {
+      display: block;
+      width: min(200px, 46vw);
+      height: auto;
+      margin: 0 auto;
+      aspect-ratio: 2.5 / 3.5;
+      object-fit: contain;
+      border-radius: 14px;
+      border: 2px solid var(--border-soft);
+      background: linear-gradient(145deg, #2a1f45, #141020);
+      box-shadow: var(--glow);
+      line-height: 0;
+    }
+
+    html[data-theme="light"] .hub-title-card-back {
+      background: linear-gradient(145deg, #e8e0f5, #d4c8e8);
+    }
+
+    .hub-hero h1 {
+      font-family: "Cinzel", serif;
+      font-weight: 700;
+      font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+      letter-spacing: 0.12em;
+      margin: 0 0 0.5rem;
+      background: linear-gradient(135deg, var(--gold), var(--accent), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(196, 165, 255, 0.4));
+    }
+
+    html[data-theme="light"] .hub-hero h1 {
+      filter: drop-shadow(0 0 12px rgba(91, 47, 168, 0.25));
+    }
+
+    .hub-tagline {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    .hub-nav {
+      display: grid;
+      gap: 0.7rem;
+      max-width: 400px;
+      margin: 0 auto 1rem;
+    }
+
+    .hub-card {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.95rem 1.15rem;
+      border-radius: 16px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-panel);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      font-family: "Quicksand", sans-serif;
+      font-size: 0.98rem;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+
+    .hub-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-2px);
+      box-shadow: var(--glow);
+    }
+
+    .hub-card-primary {
+      border-color: rgba(126, 232, 220, 0.45);
+      color: var(--teal);
+      background: rgba(126, 232, 220, 0.08);
+    }
+
+    .hub-pro {
+      border-color: rgba(240, 215, 140, 0.45);
+      color: var(--gold);
+      background: linear-gradient(135deg, rgba(196, 165, 255, 0.12), rgba(240, 215, 140, 0.1));
+    }
+
+    .is-pro-only,
+    a.is-pro-only.hub-card,
+    .grimoire-jump-pro {
+      display: none !important;
+    }
+
+    html[data-pro="1"] .is-pro-only,
+    html[data-pro="1"] a.is-pro-only.hub-card,
+    html[data-pro="1"] .grimoire-jump-pro {
+      display: block !important;
+    }
+
+    .grimoire-jump-pro {
+      flex-wrap: wrap;
+    }
+
+    html[data-pro="1"] .grimoire-jump-pro {
+      display: flex !important;
+    }
+
+    a.is-pro-only.hub-card.hub-master {
+      display: none !important;
+    }
+
+    html[data-pro="1"] a.is-pro-only.hub-card.hub-master {
+      display: block !important;
+    }
+
+    .pro-screen {
+      margin-top: 0.25rem;
+    }
+
+    .pro-lede {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 0 0 1rem;
+      line-height: 1.5;
+    }
+
+    .pro-nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem 0.75rem;
+      margin: 0 0 1.5rem;
+      font-family: "Quicksand", sans-serif;
+    }
+
+    .pro-nav a {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--teal);
+      text-decoration: none;
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+    }
+
+    .pro-nav a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .pro-board {
+      margin-bottom: 2.25rem;
+    }
+
+    .pro-hud {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem 0.65rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .pro-hud .hud-pill {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .pro-target-line {
+      text-align: center;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--teal);
+      min-height: 1.4em;
+      margin: 0.35rem 0 0.85rem;
+    }
+
+    .pro-target-line em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    .queen-card-row.five {
+      gap: 0.45rem;
+      min-height: 168px;
+    }
+
+    .queen-card-row.five .queen-card-btn {
+      width: min(19vw, 100px);
+      height: min(26.5vw, 140px);
+      min-width: 72px;
+    }
+
+    .pro-card-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: clamp(0.85rem, 2.2vw, 1rem);
+      color: var(--text);
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .pro-palettes {
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 0.9rem 1.1rem;
+      background: var(--bg-panel);
+      max-width: 480px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .pro-palettes h2 {
+      font-size: 1.05rem;
+      margin: 0 0 0.5rem;
+      color: var(--text);
+    }
+
+    .pro-pal-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem 0.85rem;
+    }
+
+    .pro-pal-grid label {
+      font-size: 0.84rem;
+      cursor: pointer;
+    }
+
+    .grimoire-curated-reading {
+      max-width: 700px;
+      margin: 1.5rem auto 0;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 0.9rem 1.1rem 1.1rem;
+      background: var(--bg-panel);
+    }
+
+    .grimoire-curated-reading h2 {
+      font-size: 1.1rem;
+      margin: 0 0 0.65rem;
+    }
+
+    .grimoire-curated-reading ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .grimoire-curated-reading li {
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+
+    .grimoire-curated-reading a {
+      color: var(--teal);
+      font-weight: 600;
+    }
+
+    .pro-disclaimer {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+
+    .pro-utils {
+      max-width: 700px;
+      margin: 1.5rem auto 0;
+      padding: 0.9rem 1.1rem 1.1rem;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      background: var(--bg-panel);
+    }
+
+    .pro-utils h2 {
+      font-size: 1.05rem;
+      margin: 0 0 0.4rem;
+    }
+
+    .pro-utils .howto {
+      margin: 0 0 0.6rem;
+      line-height: 1.5;
+    }
+
+    .pro-utils .copy-row,
+    .pro-tool-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.6rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .pro-back-top {
+      text-align: center;
+      margin: 0.5rem 0 0.25rem;
+    }
+
+    .pro-back-top a {
+      color: var(--teal);
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+
+    .pro-crisis {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 0.5rem 0 0;
+      line-height: 1.4;
+    }
+
+    a.pro-rec-mute {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .pro-g-extended h3 {
+      margin: 0.9rem 0 0.45rem;
+      color: var(--text);
+    }
+
+    .pro-g-extended p {
+      margin: 0.45rem 0 0.65rem;
+      line-height: 1.55;
+    }
+
+    .pro-g-extended ul,
+    .pro-g-extended ol {
+      margin: 0.35rem 0 0.6rem 1.15rem;
+      line-height: 1.5;
+    }
+
+    /* Pro color palettes (stack with light/dark theme) */
+    html[data-palette="aurora"] {
+      --bg-deep: #0a0c18;
+      --bg-panel: rgba(25, 18, 50, 0.78);
+      --accent: #7af5e2;
+      --gold: #ffd2a0;
+      --teal: #6ee7ff;
+      --muted: #8ba3c4;
+    }
+
+    html[data-palette="aurora"][data-theme="light"] {
+      --bg-deep: #e8f4fc;
+      --bg-panel: rgba(255, 255, 255, 0.9);
+      --accent: #007a6e;
+      --gold: #a85a0a;
+      --teal: #04749c;
+    }
+
+    html[data-palette="ember"] {
+      --bg-deep: #150808;
+      --bg-panel: rgba(45, 20, 18, 0.8);
+      --accent: #ff7a4d;
+      --gold: #ffc94d;
+      --teal: #ff8f8a;
+    }
+
+    html[data-palette="ember"][data-theme="light"] {
+      --bg-deep: #fff4ec;
+      --bg-panel: rgba(255, 255, 255, 0.9);
+      --accent: #c24a1a;
+      --gold: #6b3d00;
+      --teal: #a3342c;
+    }
+
+    html[data-palette="moss"] {
+      --bg-deep: #080f0a;
+      --bg-panel: rgba(18, 32, 24, 0.8);
+      --accent: #8fd98f;
+      --gold: #d0e6a0;
+      --teal: #5ee0b8;
+    }
+
+    html[data-palette="moss"][data-theme="light"] {
+      --bg-deep: #e9f2ea;
+      --bg-panel: rgba(255, 255, 255, 0.9);
+      --accent: #2d6a3a;
+      --gold: #4a5a20;
+      --teal: #0d7a5a;
+    }
+
+    html[data-palette="violet"] {
+      --bg-deep: #0c0614;
+      --bg-panel: rgba(28, 12, 44, 0.82);
+      --accent: #b388ff;
+      --gold: #e8c0ff;
+      --teal: #c2a0ff;
+    }
+
+    html[data-palette="violet"][data-theme="light"] {
+      --bg-deep: #f2ecfc;
+      --bg-panel: rgba(255, 255, 255, 0.9);
+      --accent: #5a2d9e;
+      --gold: #6a3a9e;
+    }
+
+    .hub-foot {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2rem;
+      line-height: 1.65;
+    }
+
+    .hub-foot button {
+      background: none;
+      border: none;
+      color: var(--teal);
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      font: inherit;
+    }
+
+    .hub-foot button#btnResetStats {
+      color: var(--accent);
+    }
+
+    .screen-top-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin: 0 0 1.1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .btn-back-title {
+      font-family: "Quicksand", sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.45rem 0.95rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: var(--bg-panel);
+      color: var(--teal);
+      text-decoration: none;
+    }
+
+    .btn-back-title:hover {
+      border-color: var(--teal);
+    }
+
+    .game-extras {
+      margin-top: 1rem;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      background: var(--bg-panel);
+      overflow: hidden;
+    }
+
+    .game-extras > summary {
+      font-family: "Quicksand", sans-serif;
+      font-weight: 600;
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      color: var(--gold);
+      list-style: none;
+    }
+
+    .game-extras > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .game-extras[open] > summary {
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    #grimoire .game-extras#grimoire-toolkit {
+      margin-top: 1.15rem;
+    }
+
+    .game-extras .side {
+      padding: 0.85rem 0.75rem 1rem;
+      display: block;
+      max-width: none;
+    }
+
+    .game-row.game-row-standalone {
+      grid-template-columns: 1fr;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    header h1 {
+      font-family: "Cinzel", serif;
+      font-weight: 700;
+      font-size: clamp(1.6rem, 4vw, 2.35rem);
+      letter-spacing: 0.12em;
+      margin: 0 0 0.35rem;
+      background: linear-gradient(135deg, var(--gold), var(--accent), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 20px rgba(196, 165, 255, 0.4));
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    /* Grimoire — ESP foundation guide */
+    .grimoire {
+      background: linear-gradient(165deg, rgba(18, 10, 35, 0.92), rgba(12, 8, 28, 0.88));
+      border: 1px solid rgba(126, 232, 220, 0.18);
+      border-radius: 22px;
+      padding: 1.35rem 1.2rem 1.5rem;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(14px);
+      box-shadow:
+        0 0 40px rgba(100, 60, 160, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .grimoire-title {
+      font-family: "Cinzel", serif;
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+      color: var(--teal);
+      margin: 0 0 0.85rem;
+      text-align: center;
+    }
+
+    .grimoire-lede {
+      font-size: 0.92rem;
+      line-height: 1.65;
+      color: var(--text);
+      margin: 0 0 0.75rem;
+    }
+
+    .grimoire-lede:last-of-type {
+      margin-bottom: 1rem;
+    }
+
+    details.grimoire-part {
+      margin-bottom: 0.5rem;
+      border: 1px solid rgba(196, 165, 255, 0.2);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.22);
+      overflow: hidden;
+    }
+
+    details.grimoire-part[open] {
+      box-shadow: 0 0 20px rgba(196, 165, 255, 0.12);
+    }
+
+    details.grimoire-part summary {
+      font-family: "Cinzel", serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    details.grimoire-part summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.grimoire-part summary::before {
+      content: "✦";
+      color: var(--accent);
+      font-size: 0.75rem;
+      opacity: 0.9;
+      transition: transform 0.25s ease, color 0.2s;
+    }
+
+    details.grimoire-part[open] summary::before {
+      transform: rotate(90deg);
+      color: var(--accent-hot);
+    }
+
+    details.grimoire-part summary:hover {
+      background: rgba(196, 165, 255, 0.08);
+    }
+
+    .grimoire-body {
+      padding: 0 1rem 1.1rem;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: #d8d0e8;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .grimoire-body h3 {
+      font-family: "Cinzel", serif;
+      font-size: 0.82rem;
+      color: var(--accent);
+      margin: 1rem 0 0.5rem;
+      font-weight: 600;
+    }
+
+    .grimoire-body h3:first-child {
+      margin-top: 0.65rem;
+    }
+
+    .grimoire-body p {
+      margin: 0.5rem 0;
+    }
+
+    .grimoire-body ul,
+    .grimoire-body ol {
+      margin: 0.45rem 0;
+      padding-left: 1.2rem;
+    }
+
+    .grimoire-body li {
+      margin: 0.35rem 0;
+    }
+
+    .grimoire-body strong {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .grimoire-warn {
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 158, 205, 0.35);
+      background: rgba(80, 20, 50, 0.25);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .grimoire-warn h3 {
+      color: var(--accent-hot);
+      margin-top: 0;
+    }
+
+    .grimoire-callout {
+      margin: 1rem 0;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(126, 232, 220, 0.28);
+      background: rgba(126, 232, 220, 0.06);
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+
+    .grimoire-callout h3 {
+      font-family: "Cinzel", serif;
+      font-size: 0.8rem;
+      color: var(--teal);
+      margin: 0 0 0.5rem;
+    }
+
+    .grimoire-dl {
+      margin: 0.5rem 0 0;
+      font-size: 0.84rem;
+    }
+
+    .grimoire-dl dt {
+      font-weight: 600;
+      color: var(--gold);
+      margin: 0.75rem 0 0.2rem;
+    }
+
+    .grimoire-dl dt:first-child {
+      margin-top: 0;
+    }
+
+    .grimoire-dl dd {
+      margin: 0;
+      padding: 0 0 0.55rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .grimoire-dl dd:last-of-type {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .grimoire-closing {
+      margin: 1.25rem 0 0;
+      padding: 1rem;
+      border-radius: 14px;
+      background: rgba(126, 232, 220, 0.08);
+      border: 1px solid rgba(126, 232, 220, 0.2);
+      font-size: 0.9rem;
+      line-height: 1.65;
+      font-style: italic;
+      color: var(--teal);
+    }
+
+    /* Help (standalone, not part of grimoire expand-all) */
+    .help-section {
+      margin-bottom: 1.25rem;
+    }
+
+    .help-section > details.grimoire-part {
+      border-color: rgba(240, 215, 140, 0.35);
+      background: rgba(40, 32, 20, 0.35);
+    }
+
+    .help-section summary {
+      color: var(--gold) !important;
+    }
+
+    .tagline-help {
+      margin: 0.5rem 0 0;
+      font-size: 0.85rem;
+    }
+
+    .tagline-help a {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(126, 232, 220, 0.35);
+    }
+
+    .tagline-help a:hover {
+      color: #9ef5ea;
+      border-bottom-color: var(--teal);
+    }
+
+    .grimoire-cta {
+      display: block;
+      text-align: center;
+      margin-top: 1rem;
+      padding: 0.65rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(196, 165, 255, 0.45);
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+
+    .grimoire-cta:hover {
+      background: rgba(196, 165, 255, 0.12);
+      box-shadow: 0 0 24px rgba(196, 165, 255, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .grimoire-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: center;
+      margin: 0.75rem 0 1rem;
+      padding: 0.65rem 0.75rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      border: 1px solid rgba(196, 165, 255, 0.15);
+    }
+
+    .grimoire-toolbar span {
+      font-size: 0.72rem;
+      color: var(--muted);
+      width: 100%;
+      text-align: center;
+    }
+
+    @media (min-width: 520px) {
+      .grimoire-toolbar span {
+        width: auto;
+        flex: 1;
+        text-align: left;
+      }
+    }
+
+    .grimoire-jump {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      justify-content: center;
+      flex: 2;
+    }
+
+    .grimoire-jump a {
+      font-size: 0.75rem;
+      color: var(--teal);
+      text-decoration: none;
+      padding: 0.2rem 0.45rem;
+      border-radius: 6px;
+      border: 1px solid transparent;
+    }
+
+    .grimoire-jump a:hover {
+      border-color: rgba(126, 232, 220, 0.4);
+      background: rgba(126, 232, 220, 0.08);
+    }
+
+    .grimoire-toolbar .btn-tiny {
+      font-family: "Quicksand", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+      border: 1px solid rgba(196, 165, 255, 0.35);
+      background: rgba(196, 165, 255, 0.08);
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .grimoire-toolbar .btn-tiny:hover {
+      background: rgba(196, 165, 255, 0.15);
+    }
+
+    /* Session toolkit — breath, journal */
+    .toolkit-breath {
+      text-align: center;
+    }
+
+    .breath-ring-wrap {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0.5rem auto 0.75rem;
+    }
+
+    .breath-ring {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(var(--teal) var(--p, 0%), rgba(255, 255, 255, 0.08) 0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3), 0 0 20px rgba(126, 232, 220, 0.15);
+    }
+
+    .breath-inner {
+      width: 78%;
+      height: 78%;
+      border-radius: 50%;
+      background: var(--bg-deep);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(126, 232, 220, 0.25);
+    }
+
+    .breath-phase {
+      font-family: "Cinzel", serif;
+      font-size: 0.72rem;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+    }
+
+    .breath-count {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--teal);
+      line-height: 1.2;
+    }
+
+    .copy-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-top: 0.65rem;
+    }
+
+    .copy-row button {
+      font-family: "Quicksand", sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.45rem 0.65rem;
+      border-radius: 10px;
+      border: 1px solid rgba(240, 215, 140, 0.35);
+      background: rgba(240, 215, 140, 0.08);
+      color: var(--gold);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .copy-row button:hover {
+      background: rgba(240, 215, 140, 0.15);
+    }
+
+    .session-journal {
+      width: 100%;
+      min-height: 72px;
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.65rem;
+      border-radius: 10px;
+      border: 1px solid rgba(196, 165, 255, 0.25);
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.82rem;
+      resize: vertical;
+    }
+
+    .session-journal:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(196, 165, 255, 0.2);
+    }
+
+    .journal-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 0;
+      font-size: 0.8rem;
+    }
+
+    .checklist li {
+      margin: 0.35rem 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.45rem;
+    }
+
+    .checklist input {
+      margin-top: 0.2rem;
+      accent-color: var(--teal);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: rgba(30, 20, 50, 0.95);
+      border: 1px solid var(--teal);
+      color: var(--teal);
+      padding: 0.55rem 1.25rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 300;
+      transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .hud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .hud-pill {
+      background: var(--bg-panel);
+      border: 1px solid rgba(196, 165, 255, 0.25);
+      border-radius: 999px;
+      padding: 0.45rem 1rem;
+      font-size: 0.9rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .hud-pill strong {
+      color: var(--accent);
+    }
+
+    .game-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 900px) {
+      .game-row {
+        grid-template-columns: 1fr 320px;
+        align-items: start;
+      }
+    }
+
+    .board {
+      background: var(--bg-panel);
+      border: 1px solid rgba(196, 165, 255, 0.2);
+      border-radius: 20px;
+      padding: 1.25rem 1rem 1.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--glow), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .board h2 {
+      font-family: "Cinzel", serif;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      margin: 0 0 1rem;
+      text-align: center;
+    }
+
+    .phase-msg {
+      text-align: center;
+      min-height: 2.6em;
+      color: var(--teal);
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Three-card Queen trainer (same flow as main app ThreeCardGame) */
+    .queen-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .queen-difficulty {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .queen-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .queen-chip {
+      font-family: "Quicksand", sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    html[data-theme="light"] .queen-chip {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .queen-chip:hover {
+      border-color: var(--teal);
+    }
+
+    .queen-chip.is-selected {
+      border-color: var(--teal);
+      background: rgba(126, 232, 220, 0.15);
+      color: var(--teal);
+    }
+
+    .queen-card-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 0.85rem;
+      min-height: 210px;
+      margin-bottom: 0.5rem;
+    }
+
+    .queen-card-row.phase-shuffling .queen-card-inner {
+      opacity: 0.55;
+      animation: queenWiggle 0.35s ease-in-out infinite alternate;
+    }
+
+    @keyframes queenWiggle {
+      from { transform: translateY(0) rotate(-1deg); }
+      to { transform: translateY(-4px) rotate(1deg); }
+    }
+
+    .queen-card-btn {
+      position: relative;
+      /* Poker ratio 2.5 : 3.5 — tall enough to show full PNG with contain */
+      width: 140px;
+      height: 196px;
+      padding: 0;
+      border: 2px solid var(--border-soft);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+
+    .queen-card-btn:hover:not(:disabled) {
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+    }
+
+    .queen-card-btn:disabled {
+      cursor: default;
+    }
+
+    .queen-card-btn.picked {
+      border-color: #4ade80;
+      box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.35);
+    }
+
+    .queen-card-btn.pro-eliminated {
+      opacity: 0.86;
+      cursor: default;
+      box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.35);
+    }
+
+    .queen-card-btn.pro-eliminated::after {
+      content: "✓";
+      position: absolute;
+      right: 6px;
+      bottom: 4px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--teal);
+      line-height: 1;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+      pointer-events: none;
+    }
+
+    .queen-card-btn.pro-last-obvious {
+      box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.45);
+    }
+
+    .queen-card-inner {
+      position: absolute;
+      inset: 0;
+      display: block;
+      line-height: 0;
+      background: linear-gradient(145deg, #2a1f45, #141020);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    html[data-theme="light"] .queen-card-inner {
+      background: linear-gradient(145deg, #e8e0f5, #d4c8e8);
+    }
+
+    .queen-card-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      background: transparent;
+    }
+
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      perspective: 1000px;
+    }
+
+    .card {
+      --card-w: 118px;
+      --card-h: 168px;
+      width: var(--card-w);
+      height: var(--card-h);
+      position: relative;
+      cursor: pointer;
+      border-radius: 14px;
+      transform-style: preserve-3d;
+      transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.25s;
+      user-select: none;
+    }
+
+    .card:hover:not(.flipped):not(.disabled) {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.45), 0 0 24px rgba(196, 165, 255, 0.25);
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card.selected {
+      box-shadow: 0 0 0 3px var(--accent-hot), 0 0 40px rgba(255, 158, 205, 0.45);
+      animation: cardPulse 1.2s ease-in-out infinite;
+    }
+
+    .card.disabled {
+      opacity: 0.45;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    @keyframes cardPulse {
+      0%, 100% { box-shadow: 0 0 0 3px var(--accent-hot), 0 0 28px rgba(255, 158, 205, 0.35); }
+      50% { box-shadow: 0 0 0 3px var(--gold), 0 0 40px rgba(240, 215, 140, 0.45); }
+    }
+
+    .card-inner {
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+
+    .card-face, .card-back {
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .card-back {
+      background: linear-gradient(145deg, #2a1f45, #1a1028);
+      background-image:
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255,255,255,0.03) 8px, rgba(255,255,255,0.03) 9px);
+    }
+
+    .card-back .sigil {
+      font-size: 2.2rem;
+      opacity: 0.85;
+      filter: drop-shadow(0 0 8px rgba(196, 165, 255, 0.5));
+    }
+
+    .card-back span {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    .card-face {
+      background: var(--card-face);
+      transform: rotateY(180deg);
+      text-align: center;
+    }
+
+    .card-face .icon {
+      font-size: 2rem;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-face .name {
+      font-family: "Cinzel", serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+    }
+
+    .card-face .tier {
+      font-size: 0.6rem;
+      color: var(--teal);
+      margin-top: 0.2rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      justify-content: center;
+      margin-top: 1.25rem;
+    }
+
+    button.btn {
+      font-family: "Quicksand", sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #6b4eae, #9d6bc9);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(107, 78, 174, 0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    button.btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(157, 107, 201, 0.55);
+    }
+
+    button.btn:active {
+      transform: translateY(0);
+    }
+
+    button.btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(196, 165, 255, 0.4);
+      color: var(--accent);
+      box-shadow: none;
+    }
+
+    button.btn-ghost:hover {
+      background: rgba(196, 165, 255, 0.1);
+    }
+
+    .result-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(126, 232, 220, 0.2);
+      min-height: 4rem;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .result-box strong {
+      color: var(--accent-hot);
+    }
+
+    /* Side panel — ESP tips */
+    .side {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .tips-panel {
+      background: var(--bg-panel);
+      border: 1px solid rgba(126, 232, 220, 0.2);
+      border-radius: 20px;
+      padding: 1.1rem;
+      backdrop-filter: blur(12px);
+    }
+
+    .tips-panel h3 {
+      font-family: "Cinzel", serif;
+      font-size: 0.95rem;
+      color: var(--teal);
+      margin: 0 0 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tip-card {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 0.75rem 0.85rem;
+      margin-bottom: 0.65rem;
+      border-left: 3px solid var(--accent);
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    .tip-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .tip-card .tip-title {
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .tip-nav {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      justify-content: center;
+    }
+
+    .tip-nav button {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    .howto {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .howto strong {
+      color: var(--accent);
+    }
+
+    .howto kbd,
+    .grimoire-body kbd {
+      font-size: 0.8em;
+      padding: 0.12em 0.4em;
+      border-radius: 5px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(196, 165, 255, 0.35);
+      font-family: ui-monospace, monospace;
+    }
+
+    /* Sparkles */
+    .sparkle-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: sparkleFly 0.85s ease-out forwards;
+    }
+
+    @keyframes sparkleFly {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--dx), var(--dy)) scale(0.2);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sparkle {
+        animation: none;
+        opacity: 0.5;
+      }
+      .card.selected {
+        animation: none;
+      }
+      .card:hover:not(.flipped):not(.disabled) {
+        transform: none;
+      }
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* Records & achievements */
+    .records-section {
+      margin-top: 1.5rem;
+    }
+
+    .records-details summary {
+      font-size: 0.95rem;
+    }
+
+    .ach-pill {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--gold);
+      margin-left: 0.35rem;
+      opacity: 0.95;
+    }
+
+    .records-body {
+      padding-top: 0.5rem;
+    }
+
+    .records-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 800px) {
+      .records-grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+      }
+    }
+
+    .records-col h3 {
+      font-family: "Cinzel", serif;
+      font-size: 0.88rem;
+      color: var(--gold);
+      margin: 0 0 0.5rem;
+      letter-spacing: 0.04em;
+    }
+
+    .records-col h3:not(:first-child) {
+      margin-top: 1.25rem;
+    }
+
+    .rec-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+
+    .rec-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .rec-list li span:first-child {
+      color: var(--muted);
+    }
+
+    .rec-list li span:last-child {
+      color: var(--teal);
+      font-weight: 600;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(196, 165, 255, 0.15);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .leaderboard-table th,
+    .leaderboard-table td {
+      padding: 0.45rem 0.55rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .leaderboard-table th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .leaderboard-table tr:hover td {
+      background: rgba(196, 165, 255, 0.06);
+    }
+
+    .leaderboard-table .lb-rank {
+      color: var(--gold);
+      font-weight: 700;
+      width: 2rem;
+    }
+
+    .leaderboard-table .lb-gain {
+      color: var(--accent-hot);
+      font-weight: 600;
+    }
+
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.65rem;
+    }
+
+    .ach-card {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      padding: 0.65rem 0.7rem;
+      border-radius: 12px;
+      border: 1px solid rgba(196, 165, 255, 0.2);
+      background: rgba(0, 0, 0, 0.22);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .ach-card.unlocked {
+      border-color: rgba(126, 232, 220, 0.35);
+      box-shadow: 0 0 16px rgba(126, 232, 220, 0.12);
+    }
+
+    .ach-card.locked {
+      opacity: 0.42;
+      filter: grayscale(0.25);
+    }
+
+    .ach-ic {
+      font-size: 1.35rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .ach-meta {
+      min-width: 0;
+    }
+
+    .ach-meta strong {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text);
+      margin-bottom: 0.15rem;
+    }
+
+    .ach-meta span {
+      font-size: 0.68rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .ach-count {
+      font-size: 0.75rem;
+      color: var(--teal);
+      font-weight: 600;
+    }
+
+    /* —— Intro splash —— */
+    .intro-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 1;
+      transition: opacity 0.75s ease, visibility 0.75s;
+      visibility: visible;
+    }
+
+    .intro-overlay.intro-exit {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    html.intro-done .intro-overlay {
+      display: none;
+    }
+
+    .intro-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 100% 80% at 50% 0%, rgba(120, 70, 200, 0.45), transparent 55%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(255, 120, 180, 0.18), transparent),
+        radial-gradient(ellipse 50% 40% at 10% 90%, rgba(80, 220, 200, 0.12), transparent),
+        var(--bg-deep);
+    }
+
+    .intro-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 15% 25%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 45% 60%, rgba(255, 255, 255, 0.35), transparent),
+        radial-gradient(1px 1px at 72% 18%, rgba(255, 255, 255, 0.4), transparent),
+        radial-gradient(1.5px 1.5px at 88% 75%, rgba(255, 255, 255, 0.3), transparent),
+        radial-gradient(1px 1px at 30% 88%, rgba(255, 255, 255, 0.45), transparent);
+      opacity: 0.85;
+      animation: introTwinkle 5s ease-in-out infinite alternate;
+    }
+
+    @keyframes introTwinkle {
+      from { opacity: 0.55; }
+      to { opacity: 0.95; }
+    }
+
+    .intro-particles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .intro-particles::before,
+    .intro-particles::after {
+      content: "";
+      position: absolute;
+      width: 40vmax;
+      height: 40vmax;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.35;
+      animation: introDrift 18s ease-in-out infinite;
+    }
+
+    .intro-particles::before {
+      background: rgba(196, 165, 255, 0.5);
+      top: -10%;
+      left: -15%;
+    }
+
+    .intro-particles::after {
+      background: rgba(255, 158, 205, 0.35);
+      bottom: -15%;
+      right: -10%;
+      animation-delay: -9s;
+    }
+
+    @keyframes introDrift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(8%, 5%) scale(1.08); }
+      66% { transform: translate(-5%, 8%) scale(0.95); }
+    }
+
+    .intro-inner {
+      position: relative;
+      text-align: center;
+      max-width: 36rem;
+      animation: introRise 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+    }
+
+    @keyframes introRise {
+      from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .intro-eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin: 0 0 1rem;
+      opacity: 0;
+      animation: introFadeLine 0.9s ease 0.4s forwards;
+    }
+
+    @keyframes introFadeLine {
+      to { opacity: 0.9; }
+    }
+
+    .intro-title {
+      font-family: "Cinzel", serif;
+      font-weight: 700;
+      font-size: clamp(2.1rem, 9vw, 3.75rem);
+      letter-spacing: 0.18em;
+      margin: 0 0 0.75rem;
+      line-height: 1.15;
+      background: linear-gradient(
+        110deg,
+        var(--gold) 0%,
+        var(--accent) 25%,
+        var(--teal) 50%,
+        var(--accent-hot) 75%,
+        var(--gold) 100%
+      );
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 32px rgba(196, 165, 255, 0.45));
+      animation: introShimmer 7s linear infinite;
+    }
+
+    @keyframes introShimmer {
+      to { background-position: 200% center; }
+    }
+
+    .intro-sub {
+      font-size: clamp(0.95rem, 3vw, 1.15rem);
+      color: var(--muted);
+      margin: 0 0 1.75rem;
+      line-height: 1.5;
+      opacity: 0;
+      animation: introFadeLine 0.9s ease 0.75s forwards;
+    }
+
+    .intro-rings {
+      position: relative;
+      height: 120px;
+      margin: 0 auto 1.75rem;
+      max-width: 280px;
+    }
+
+    .intro-rings span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      border: 1px solid rgba(196, 165, 255, 0.25);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: introRingPulse 3.2s ease-in-out infinite;
+    }
+
+    .intro-rings span:nth-child(1) {
+      width: 72px;
+      height: 72px;
+      animation-delay: 0s;
+    }
+
+    .intro-rings span:nth-child(2) {
+      width: 108px;
+      height: 108px;
+      animation-delay: 0.4s;
+      border-color: rgba(126, 232, 220, 0.2);
+    }
+
+    .intro-rings span:nth-child(3) {
+      width: 148px;
+      height: 148px;
+      animation-delay: 0.8s;
+      border-color: rgba(255, 158, 205, 0.18);
+    }
+
+    @keyframes introRingPulse {
+      0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
+    }
+
+    .intro-enter {
+      font-family: "Quicksand", sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      padding: 0.9rem 2.25rem;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #0a0612;
+      background: linear-gradient(135deg, var(--gold), #e8c86a);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.25) inset,
+        0 4px 28px rgba(240, 215, 140, 0.45),
+        0 0 48px rgba(196, 165, 255, 0.25);
+      transition: transform 0.2s, box-shadow 0.2s;
+      opacity: 0;
+      animation: introFadeLine 0.8s ease 1s forwards;
+    }
+
+    .intro-enter:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.35) inset,
+        0 8px 36px rgba(240, 215, 140, 0.55),
+        0 0 56px rgba(196, 165, 255, 0.35);
+    }
+
+    .intro-enter:focus-visible {
+      outline: 2px solid var(--teal);
+      outline-offset: 4px;
+    }
+
+    .intro-skip {
+      display: block;
+      margin: 1rem auto 0;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      opacity: 0;
+      animation: introFadeLine 0.8s ease 1.15s forwards;
+    }
+
+    .intro-skip:hover {
+      color: var(--teal);
+    }
+
+    .intro-hint {
+      margin: 1.25rem 0 0;
+      font-size: 0.75rem;
+      color: rgba(155, 143, 184, 0.75);
+      letter-spacing: 0.04em;
+      opacity: 0;
+      animation: introFadeLine 0.8s ease 1.3s forwards;
+    }
+
+    .intro-hint kbd {
+      font-size: 0.85em;
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(196, 165, 255, 0.3);
+      font-family: ui-monospace, monospace;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .intro-bg::after,
+      .intro-particles::before,
+      .intro-particles::after,
+      .intro-title,
+      .intro-rings span {
+        animation: none !important;
+      }
+
+      .intro-inner {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+
+      .intro-eyebrow,
+      .intro-sub,
+      .intro-enter,
+      .intro-skip,
+      .intro-hint {
+        animation: none !important;
+        opacity: 1;
+      }
+
+      .intro-title {
+        background-position: 50% 50%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div
+    class="intro-overlay"
+    id="introOverlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="introTitle"
+    aria-describedby="introDesc"
+  >
+    <button type="button" class="intro-exit-corner" id="introExitX" aria-label="Exit intro — go to app">
+      Exit
+    </button>
+    <div class="intro-bg" aria-hidden="true"></div>
+    <div class="intro-particles" aria-hidden="true"></div>
+    <div class="intro-inner">
+      <p class="intro-eyebrow">Oracle · Grimoire · First impression</p>
+      <h1 id="introTitle" class="intro-title">✦ ASCENSION ✦</h1>
+      <p id="introDesc" class="intro-sub">
+        Three veils wait. Still the noise, feel the pull, then choose the path you ascend with.
+      </p>
+      <div class="intro-rings" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <button type="button" class="intro-enter" id="introEnter">Enter the oracle</button>
+      <button type="button" class="intro-skip" id="introSkip">Skip — go straight in</button>
+      <p class="intro-hint"><kbd>Enter</kbd> to begin · <kbd>Esc</kbd> to skip</p>
+    </div>
+  </div>
+
+  <a class="skip-link" href="#game">Skip to card game</a>
+  <a class="skip-link skip-help" href="#pro">Skip to Pro</a>
+  <a class="skip-link skip-help" href="#grimoire">Skip to grimoire</a>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="sparkle-layer" id="sparkleLayer" aria-hidden="true"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="settings-backdrop" id="settingsBackdrop" aria-hidden="true"></div>
+  <div
+    class="settings-modal"
+    id="settingsModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="settingsTitle"
+    aria-hidden="true"
+  >
+    <div class="settings-head">
+      <h2 id="settingsTitle">Settings</h2>
+      <button type="button" class="btn-exit-settings" id="btnCloseSettings">Close</button>
+    </div>
+    <div class="settings-body">
+      <h3>Theme</h3>
+      <div class="theme-options">
+        <label>
+          <input type="radio" name="ascensionThemeMode" value="dark" id="themeDark" />
+          Dark
+        </label>
+        <label>
+          <input type="radio" name="ascensionThemeMode" value="light" id="themeLight" />
+          Light
+        </label>
+        <label>
+          <input type="radio" name="ascensionThemeMode" value="system" id="themeSystem" />
+          Match system
+        </label>
+      </div>
+      <h3>Color scheme (optional)</h3>
+      <p class="settings-note" style="margin: 0 0 0.5rem; font-size: 0.84rem; color: var(--muted)">Stacks with the theme. Saved in this browser as <code>ascension_palette</code>.</p>
+      <div class="pro-pal-grid" id="proPaletteGroup" style="margin-bottom: 0.5rem">
+        <label><input type="radio" name="ascensionPalette" value="default" checked /> Default</label>
+        <label><input type="radio" name="ascensionPalette" value="aurora" /> Aurora</label>
+        <label><input type="radio" name="ascensionPalette" value="ember" /> Ember</label>
+        <label><input type="radio" name="ascensionPalette" value="moss" /> Moss</label>
+        <label><input type="radio" name="ascensionPalette" value="violet" /> Violet haze</label>
+      </div>
+      <h3>Window</h3>
+      <div class="settings-actions">
+        <button type="button" class="btn-quit-tab" id="btnQuitTab">Close tab / exit</button>
+        <p class="settings-note">
+          Works when this page was opened by script; otherwise your browser may keep the tab open — use the tab’s own close control if needed.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section id="title" class="app-screen" aria-label="Title menu">
+      <div class="hub-hero">
+        <div class="hub-hero-art" aria-hidden="true">
+          <img
+            class="hub-title-card-back"
+            src="cards/back.png"
+            width="200"
+            height="280"
+            alt=""
+            decoding="async"
+          />
+        </div>
+        <h1>✦ ASCENSION ✦</h1>
+        <p class="hub-tagline">Easy ESP Training Card Game</p>
+      </div>
+      <nav class="hub-nav" aria-label="Main menu">
+        <a href="#game" class="hub-card hub-card-primary">🃏 Play the game</a>
+        <a href="#pro" class="hub-card is-pro-only hub-master" id="linkMasterLevel" title="Master level: game-master order, four finds on a five-card board">🎴 Master level</a>
+        <a href="#grimoire" class="hub-card">📖 Grimoire &amp; help</a>
+        <a href="#records" class="hub-card">🏆 Records &amp; achievements</a>
+        <button type="button" class="hub-card" id="btnOpenSettings">⚙ Settings</button>
+        <button type="button" class="hub-card hub-pro" id="btnPro" aria-pressed="false" title="Show or hide Master-level content in the grimoire and the Master level button on this screen">Pro: off</button>
+      </nav>
+      <div class="hub-foot">
+        <p style="margin:0 0 0.35rem">Standalone Ascension — any modern browser · no server · data stays on <strong>this device</strong></p>
+        <p style="margin:0">
+          <button type="button" id="btnReplayIntro">Replay opening</button>
+          ·
+          <button type="button" id="btnResetStats">Reset stats &amp; checklist</button>
+        </p>
+        <p style="margin:0.45rem 0 0;opacity:0.88">Not medical advice · practice at your own pace</p>
+      </div>
+    </section>
+
+    <section id="grimoire" class="app-screen" aria-label="Grimoire and help">
+      <div class="screen-top-bar">
+        <a href="#title" class="btn-back-title">← Title</a>
+      </div>
+
+    <section class="help-section" aria-label="Help">
+      <details class="grimoire-part" id="page-help">
+        <summary>❓ Help — how to use this page</summary>
+        <div class="grimoire-body">
+          <h3>What this is</h3>
+          <p>
+            <strong>Ascension</strong> is a single HTML file: a <strong>three-card oracle</strong> for practicing first impressions, and a <strong>grimoire</strong> with a guided path (P1–P6), a <a href="#grimoire-toolkit" style="color:var(--teal);font-weight:600">session toolkit</a> (breath, copy lines, checklist, log, tips), and <a href="#grimoire-curated-reading" style="color:var(--teal);font-weight:600">further reading</a> links. Everything runs in your browser — no account, no server.
+          </p>
+          <p>
+            The <strong>opening splash</strong> shows once per browser tab session (until you close the tab). Use <strong>Replay opening</strong> on the <strong>title menu</strong> to see it again. <strong>Exit</strong> (top-right), <kbd>Esc</kbd>, or <em>Skip</em> bypasses the fade if you’re in a hurry.
+          </p>
+
+          <h3>Reading order</h3>
+          <ol>
+            <li>From the <strong>title menu</strong>, use <strong>Pro: on / off</strong> to show <strong>Master</strong> content: the <strong>Master level</strong> (five-card) link and the extended grimoire inside <strong>Grimoire &amp; help</strong>. Palettes are under <strong>Settings</strong>. <strong>Play the game</strong> is the three-card Queen trainer; <strong>Grimoire &amp; help</strong> is the main guide.</li>
+            <li>Optional: open <strong>Help</strong> (this panel) when you’re new.</li>
+            <li>Skim or deep-read the <strong>grimoire</strong> (P1–P6) — use the jump links in that section. The <a href="#grimoire-toolkit">session toolkit</a> and <a href="#grimoire-curated-reading">further reading</a> are on the same page, below the path.</li>
+          </ol>
+
+          <h3>Queen tracker — rules (short)</h3>
+          <ul>
+            <li>Three face cards (Queen of Spades, Hearts, Diamonds) flash face-up, turn to backs, then <strong>swap positions</strong> with sliding motion for a few seconds.</li>
+            <li><strong>Basic:</strong> click the card you think is the <strong>Queen of Spades</strong>.</li>
+            <li><strong>Suit combo:</strong> after a correct Spades pick, click the Queen of <strong>Hearts</strong> or <strong>Diamonds</strong> as instructed — no second shuffle.</li>
+            <li><strong>New round</strong> starts the sequence again (also <kbd>N</kbd> when not typing in the session log or other fields).</li>
+          </ul>
+
+          <h3>HUD</h3>
+          <ul>
+            <li><strong>Streak</strong> — consecutive wins (resets on a loss).</li>
+            <li><strong>Wins</strong> — total wins in this browser.</li>
+            <li><strong>Rank</strong> — streak milestone (Apprentice / Master / Enlightened).</li>
+            <li><strong>Round</strong> — session round counter; <strong>Played</strong> — finished rounds stored locally.</li>
+          </ul>
+
+          <h3>Records &amp; achievements</h3>
+          <p>
+            <strong>Local records &amp; achievements</strong> lists Queen stats and recent rounds; achievements unlock from play. Toasts announce new unlocks. Everything is local — Reset clears it.
+          </p>
+
+          <h3>Session toolkit</h3>
+          <p>
+            <a href="#grimoire-toolkit" style="color:var(--teal);font-weight:600">Session toolkit, tips &amp; ethics</a> in the grimoire: 4-2-6 <strong>breath</strong> (use <kbd>Esc</kbd> to stop while running), <strong>copy</strong> buttons for short lines, <strong>prep checklist</strong> and <strong>session log</strong> (local storage on this device only), plus rotating <strong>tips</strong> and a short <strong>ethics</strong> blurb. You can also reach it from links on the <strong>game</strong> screen.
+          </p>
+
+          <h3>Keyboard (when not typing in the session log)</h3>
+          <ul>
+            <li><kbd>N</kbd> — new round (same as the button)</li>
+            <li><kbd>?</kbd> or <kbd>Shift</kbd>+<kbd>/</kbd> — shortcut help inside the game panel</li>
+            <li><kbd>Esc</kbd> — stop breath timer; when <strong>Settings</strong> is open, closes Settings first</li>
+          </ul>
+
+          <h3>Appearance &amp; settings</h3>
+          <p>
+            <strong>Settings</strong> on the title menu offers <strong>Dark</strong> / <strong>Light</strong> / <strong>Match system</strong> and optional <strong>color schemes</strong> (Aurora, Ember, Moss, Violet) that layer on top. Saved in this browser as <code>ascension_theme</code> and <code>ascension_palette</code>. You can also try <strong>Close tab / exit</strong> — some browsers only allow that for windows they opened themselves.
+          </p>
+
+          <h3>Grimoire toolbar</h3>
+          <p><strong>Expand all / Collapse all</strong> affect the <strong>session toolkit</strong> block, main parts <strong>P1–P6</strong>, and (when Pro is on) the <strong>+ (Master) extended</strong> sections — not this Help panel. Jump links open the matching section and expand it if you arrived via the URL hash.</p>
+
+          <h3>Privacy, backup &amp; reset</h3>
+            <p>Scores, Pro stats, leaderboard, achievements, game records, journal text, and checklist live in your browser’s storage. Clearing site data or using another browser starts fresh. <strong>Master level → Data &amp; tools</strong> (when you open that screen) can <strong>export a JSON backup</strong> of all <code>ascension_*</code> keys and import it later. Use <strong>Reset stats &amp; checklist</strong> on the title menu to wipe main game and Pro data on this device (export first if you care about the numbers).</p>
+
+          <h3>Accessibility &amp; motion</h3>
+          <p>Use the skip links at the top to jump to the <strong>game</strong>, <strong>Pro</strong>, or <strong>grimoire</strong>. If your system prefers <strong>reduced motion</strong>, sparkles and some animations are toned down automatically.</p>
+
+          <p style="margin-top:1rem;margin-bottom:0">
+            <strong>Disclaimer:</strong> This is for reflection and skill practice, not medical, legal, or financial advice. If practice worsens sleep, mood, or reality testing, pause and seek professional support.
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <section class="grimoire" aria-label="Guide: grounding, chi, and ESP practice">
+      <h2 class="grimoire-title">📖 The Path — stilling the static</h2>
+      <p class="grimoire-lede">
+        Developing <strong>ESP</strong> (Extra-Sensory Perception) is, in many traditions, not about gaining a new power, but about <strong>removing the static</strong> that blocks your natural intuitive perception. Working with grounding, prana, and chi is the foundational step to clear that static.
+      </p>
+      <p class="grimoire-lede">
+        Here is a structured guide, moving from foundational energy work to specific ESP exercises. Open each part when you’re ready — then play the oracle below to practice <strong>first impressions</strong> in a low-stakes way.
+      </p>
+
+      <div class="grimoire-toolbar">
+        <span>~20 min full read · open only what you need</span>
+        <div class="grimoire-jump">
+          <a href="#page-help">Help</a>
+          <a href="#grimoire-toolkit">Toolkit</a>
+          <a href="#grimoire-curated-reading">Read more</a>
+          <a href="#grimoire-p1">P1 Ground</a>
+          <a href="#grimoire-p2">P2 Chi</a>
+          <a href="#grimoire-p3">P3 ESP</a>
+          <a href="#grimoire-p4">P4 Theta</a>
+          <a href="#grimoire-p5">P5 Pocket</a>
+          <a href="#grimoire-p6">P6 Clear seeing</a>
+        </div>
+        <div class="grimoire-jump grimoire-jump-pro" aria-label="Pro extended (Master)">
+          <a href="#pro-g-ground">+ Ground</a>
+          <a href="#pro-g-chi">+ Chi / prana</a>
+          <a href="#pro-g-esp">+ ESP</a>
+          <a href="#pro-g-ethics">+ Ethics</a>
+        </div>
+        <button type="button" class="btn-tiny" id="btnExpandGrimoire">Expand all</button>
+        <button type="button" class="btn-tiny" id="btnCollapseGrimoire">Collapse all</button>
+      </div>
+
+      <details class="grimoire-part" id="grimoire-p1">
+        <summary>Part 1 — The absolute foundation: grounding &amp; the energy body</summary>
+        <div class="grimoire-body">
+          <p>You cannot build a sensitive antenna on a shaky tower. <strong>Grounding is your tower.</strong> Prana/Chi is your signal.</p>
+          <h3>What grounding does</h3>
+          <p>Connects your energy system to the Earth’s stable, negative ionic charge. It prevents you from becoming “spacey,” anxious, or overwhelmed by subtle energies. A grounded person is stable, present, and clear.</p>
+          <h3>The root grounding meditation</h3>
+          <p><em>Do this daily for 2 weeks before moving on.</em></p>
+          <p><strong>Posture:</strong> Sit in a chair with feet flat on the floor. Spine straight but not rigid. Hands resting on thighs.</p>
+          <p><strong>Initial breath:</strong> Close your eyes. Take 5 deep belly breaths. Inhale through nose for 4 seconds, hold for 2, exhale through mouth for 6 seconds. Let tension go.</p>
+          <p><strong>The root:</strong> Bring your awareness to the base of your spine (perineum area) and the soles of your feet. Imagine a warm, red-gold light there.</p>
+          <p><strong>The taproot:</strong> Visualize a thick, flexible cord of this red-gold light growing from your tailbone and the bottoms of your feet, drilling down through the floor, the soil, the bedrock, deep into the center of the Earth.</p>
+          <p><strong>The exchange:</strong> Feel your cord connect to the Earth’s core — a vast, molten, intelligent energy. <em>Inhale.</em> Draw up a slow, thick, dark brown/silver energy from the Earth up your cord, into your feet, legs, torso. It feels heavy, safe, and calming. <em>Exhale.</em> Send any stress, anxiety, or “static” down the cord into the Earth to be composted.</p>
+          <p><strong>The anchor:</strong> Spend 5–10 minutes just feeling this flow. You are a tree. You are a mountain. You are stable. Open your eyes. Notice how much more present you feel.</p>
+        </div>
+      </details>
+
+      <details class="grimoire-part" id="grimoire-p2">
+        <summary>Part 2 — Cultivating prana / chi: the signal fuel</summary>
+        <div class="grimoire-body">
+          <p>Once grounded, you build your internal battery. <strong>Prana is the life force.</strong> A strong pranic field acts as a lens to focus intuitive information.</p>
+          <h3>Key concept</h3>
+          <p><strong>Prana follows awareness.</strong> Where you put your attention, energy flows.</p>
+          <h3>The microcosmic orbit (simple version)</h3>
+          <p>After grounding, bring your awareness to your lower belly (2 inches below the navel, deep inside). This is the <strong>Lower Dantian</strong> — your energy battery. Imagine a warm, glowing pearl there.</p>
+          <ul>
+            <li><strong>Inhale.</strong> Draw energy from the pearl down your front torso, to your perineum (base of spine).</li>
+            <li><strong>Exhale.</strong> Draw that energy up your spine, over the crown of your head, and down your face to the tip of your tongue.</li>
+            <li>Touch the tip of your tongue to the roof of your mouth just behind your front teeth. This completes the circuit.</li>
+            <li><strong>Inhale again,</strong> draw the energy from your tongue down your front torso back to the pearl in your belly.</li>
+          </ul>
+          <p>Repeat for 5–10 minutes. You are circulating your life force. You may feel warmth, tingling, or a sense of expansion.</p>
+          <h3>Quick chi trick for ESP</h3>
+          <p>Rub your hands together vigorously for 15 seconds until you feel heat and a magnetic resistance. Then slowly pull your hands apart 2 inches, then push them back together without touching. Feel the “springy” ball of chi between them. This is your energetic sensory organ. You can learn to “feel” the energy of objects, people, or places with these hands.</p>
+        </div>
+      </details>
+
+      <details class="grimoire-part" id="grimoire-p3">
+        <summary>Part 3 — ESP development: tips &amp; tricks</summary>
+        <div class="grimoire-body">
+          <p>Now you are grounded (stable receiver) and have charged your chi (sensitive receiver). Practical exercises:</p>
+          <h3>1. “Remote viewing” of a friend (telepathy / clairvoyance)</h3>
+          <p><strong>Setup:</strong> Have a friend in another room (or think of someone you know well). Ask them to look at a simple, vivid object (a red apple, a blue mug, a yellow tennis ball) for 60 seconds.</p>
+          <p><strong>Your role:</strong> Get grounded. Rub your hands to activate chi. Close your eyes. Place your palms facing the direction of that person. Ask internally: “What is the dominant color? What is the shape? What is the sensation?”</p>
+          <p><strong>The trick:</strong> Don’t try to “see” with your eyes. Feel for the impression in your hands and your gut. The <strong>first fleeting thought</strong> that pops in (“blue… no, red… round…”) is often useful signal. Your logical mind will reject it. Trust the first impression. <strong>Write it down</strong> before your brain edits it.</p>
+          <h3>2. The Zener card DIY (clairvoyance)</h3>
+          <p>Make 5 cards: circle, square, star, wavy line, cross on index cards. Shuffle face down. Pick the top card. Don’t look. Hold it in your non-dominant hand. Close your eyes. Ask: “What is the fundamental energy of this symbol?”</p>
+          <ul>
+            <li><strong>Circle</strong> — continuous, soft, encompassing.</li>
+            <li><strong>Square</strong> — solid, blocked, structured, heavy.</li>
+            <li><strong>Star</strong> — sharp, expansive, prickly.</li>
+            <li><strong>Wavy lines</strong> — fluid, moving, cool.</li>
+            <li><strong>Cross</strong> — intersection, tension, a “+” of energy.</li>
+          </ul>
+          <p>You are not “seeing.” You are feeling the <strong>chi signature</strong> of the shape. Guess from the feeling. Practice ~10 minutes daily. Chance is 20%; with trust you may climb toward stronger hit rates.</p>
+          <h3>3. The “person envelope” test (psychometry)</h3>
+          <p>Have a friend place a small metal object (ring, key) or a photo in an envelope. Without opening it, hold the envelope in your grounded hands. Rub your chi hands first.</p>
+          <p>Ask: “What is the emotional residue? Man or woman? Calm or anxious? Recent or old?”</p>
+          <p><strong>The trick:</strong> Let images, words, smells, or feelings pop into your head. A sudden taste of coffee might mean they drink coffee. A feeling of a hard floor might mean an office. Do not judge — record.</p>
+        </div>
+      </details>
+
+      <details class="grimoire-part" id="grimoire-p4">
+        <summary>Part 4 — The “master key”: third eye &amp; theta state</summary>
+        <div class="grimoire-body">
+          <p>ESP is often easier in the <strong>Theta</strong> brainwave state (just before sleep / upon waking), when analytical “static” is softer.</p>
+          <h3>The twilight trick</h3>
+          <p>Every night as you fall asleep, and every morning as you wake (before opening your eyes), ask a simple question into the darkness:</p>
+          <ul>
+            <li>“What will I need to know today?”</li>
+            <li>“What is my friend X feeling right now?”</li>
+            <li>“Show me a symbol for my current challenge.”</li>
+          </ul>
+          <p>Do not force an answer. Ask, then let go and drift. The answer may come as a sudden knowing, a dream, or a synchronicity later that day.</p>
+
+          <div class="grimoire-warn">
+            <h3>⚠️ Crucial warnings &amp; ethics</h3>
+            <p><strong>Grounding is not optional.</strong> Un-grounded ESP can feed anxiety, paranoia, spaciness, and burnout. If you feel dizzy or unwell, stop. Touch grass (literally). Eat a meal. Do your grounding cord.</p>
+            <p><strong>Protection is hygiene, not fear.</strong> Before practice, state: <em>“I only connect to information that is for my highest good and the highest good of all. I disconnect from any energy that is not mine.”</em> Visualize a bubble of white-gold light around you — energetic skin.</p>
+            <p><strong>No spying.</strong> Using ESP to intrude on private thoughts or futures without permission is an energetic violation. It degrades clarity and character. Ask silently: “May I see what is for my highest good to know?” If you feel a heavy “no” or a wall, stop.</p>
+            <p><strong>Develop the “no” muscle.</strong> Refuse information that feels invasive, scary, or low-vibration. Ground and disconnect immediately.</p>
+          </div>
+
+          <h3>📅 Your 7-day starter routine</h3>
+          <ul>
+            <li><strong>Morning:</strong> 5 min grounding meditation (cord to Earth).</li>
+            <li><strong>Day:</strong> 2 min chi hand-rub — feel the energy ball.</li>
+            <li><strong>Evening:</strong> 5 min microcosmic orbit.</li>
+            <li><strong>Night:</strong> Twilight question before sleep. Journal by the bed.</li>
+            <li><strong>Weekend:</strong> Person-envelope test with a trusted friend.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="grimoire-part" id="grimoire-p5">
+        <summary>Part 5 — Pocket protocols, aftercare &amp; mini glossary</summary>
+        <div class="grimoire-body">
+          <div class="grimoire-callout">
+            <h3>⚡ Sixty-second grounding (busy days)</h3>
+            <p>Feet flat. Three slow exhales longer than inhales. Imagine roots from soles and tailbone into the Earth. On the last exhale, drop shoulders and jaw. You’re not replacing the full cord meditation — you’re <strong>reminding the body</strong> what stable feels like before any subtle work.</p>
+          </div>
+
+          <h3>🌿 Aftercare (when a session felt “big”)</h3>
+          <p>Wash hands with cool water. Eat something warm or salty. Walk a few minutes, or stand barefoot if safe. Name three ordinary objects in the room out loud. This helps the nervous system land — especially after strong imagery or emotion.</p>
+
+          <h3>🪶 Session log template (one line)</h3>
+          <p><em>Date · exercise · first guess (before peeking) · outcome · body state (tired/calm/etc.) · one lesson.</em> The lesson matters more than being “right.”</p>
+
+          <h3>📖 Mini glossary</h3>
+          <dl class="grimoire-dl">
+            <dt>Prana / chi</dt>
+            <dd>Traditional words for <strong>vitality</strong> or life-force — often framed as moving with breath and attention. Useful as a map, not a lab measurement.</dd>
+            <dt>Dantian (lower)</dt>
+            <dd>Energy center below the navel — taught as a <strong>storage and grounding hub</strong> in many Taoist / qigong lineages.</dd>
+            <dt>Theta</dt>
+            <dd>A relaxed brain state common at sleep edges; <strong>hypnagogic</strong> imagery and soft focus show up more easily. Not magic — biology.</dd>
+            <dt>Psychometry</dt>
+            <dd>Reading impressions from objects — best treated as <strong>associative intuition</strong> you test ethically, not as courtroom evidence.</dd>
+            <dt>Clairvoyance (in this guide)</dt>
+            <dd>Used loosely for <strong>inner seeing or sensing</strong>; here we emphasize felt-sense and first impression, not Hollywood visuals.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="grimoire-part" id="grimoire-p6">
+        <summary>Part 6 — Clear seeing: bias, troubleshooting &amp; real life</summary>
+        <div class="grimoire-body">
+          <h3>🧩 How honest minds fool themselves (and how to stay honest)</h3>
+          <ul>
+            <li><strong>Confirmation bias</strong> — remembering hits and forgetting misses. <em>Fix:</em> log <strong>every</strong> trial, not just exciting ones.</li>
+            <li><strong>Barnum effect</strong> — vague statements feel personal. <em>Fix:</em> ask for <strong>specific, falsifiable</strong> details (color, shape, number) before feedback.</li>
+            <li><strong>Expectation &amp; fear</strong> — stress paints the channel. <em>Fix:</em> if you’re anxious about an outcome, <strong>do not</strong> read on that topic until you’re grounded.</li>
+            <li><strong>Pareidolia &amp; pattern hunger</strong> — brains find faces in clouds. <em>Fix:</em> treat weird imagery as <strong>maybe-symbol, maybe-noise</strong> until life repeats the theme.</li>
+          </ul>
+
+          <h3>🩹 Troubleshooting</h3>
+          <ul>
+            <li><strong>Spacey, floating, or “too open”</strong> — stop practice. Full grounding cord, protein meal, outdoor steps. Skip subtle work until you feel heavy in your feet again.</li>
+            <li><strong>Pressure in head or mild headache</strong> — often tension or breath-holding. Soften jaw, breathe through nose, look at horizon, drink water. If it persists, rest; seek medical care if severe or sudden.</li>
+            <li><strong>Obsessive checking</strong> — pulling cards or demanding signs every hour. That’s anxiety wearing a mystical mask. <strong>Limit</strong> sessions; use a timer; return to ordinary life.</li>
+            <li><strong>Grandiose certainty</strong> — “I know exactly what they think.” Real discernment usually feels <strong>quiet</strong>, not loud. Loud certainty deserves skepticism.</li>
+          </ul>
+
+          <div class="grimoire-warn">
+            <h3>🧠 Mental health boundary</h3>
+            <p><strong>ESP practice is not therapy.</strong> If you’re hearing commanding voices, feel persecuted, or can’t sleep or eat, pause all exercises and talk to a qualified clinician. What some traditions call “spiritual emergency” can overlap with medical issues — you deserve grounded support.</p>
+          </div>
+
+          <h3>🌍 Bringing it into ordinary life</h3>
+          <p>Let intuition <strong>inform</strong> small decisions you can verify: call the friend you thought of; check the thing you almost ignored. Build trust through <strong>feedback loops</strong>, not through bigger and wilder claims. Keep earning a living, sleeping, and relating like a mammal — the subtle path works <em>inside</em> a stable life, not instead of one.</p>
+
+          <h3>👥 Others, children &amp; power</h3>
+          <p>People you read for deserve <strong>dignity and consent</strong> (where possible). Avoid fear-based pronouncements. With kids, favor <strong>coaching presence</strong> over labeling them “psychic” — identity is fragile; skills can grow without a fixed story. Never use impressions to manipulate, guilt, or control.</p>
+        </div>
+      </details>
+
+      <p class="grimoire-closing">
+        The greatest “trick” is <strong>consistency and relaxation</strong>. The harder you try, the less you’ll perceive. Be a relaxed, grounded, curious observer.         The signal is already there — you are learning to tune the dial.
+      </p>
+
+      <details class="grimoire-part game-extras" id="grimoire-toolkit">
+        <summary>Session toolkit, tips &amp; ethics</summary>
+        <aside class="side">
+          <div class="tips-panel">
+            <h3>🜂 Session toolkit</h3>
+            <p class="howto" style="margin-bottom:0.5rem">
+              <strong>4-2-6 breath</strong> (from Part 1): matches inhale / hold / exhale. Use before spreads or practice.
+            </p>
+            <div class="toolkit-breath">
+              <div class="breath-ring-wrap">
+                <div class="breath-ring" id="breathRing" style="--p: 0%">
+                  <div class="breath-inner">
+                    <span class="breath-phase" id="breathPhase">Ready</span>
+                    <span class="breath-count" id="breathCount">—</span>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-ghost" id="btnBreath" style="width:100%">▶ Start breathing</button>
+            </div>
+            <div class="copy-row">
+              <button type="button" id="copyIntent">📋 Copy protection intention</button>
+              <button type="button" id="copyDisconnect">📋 Copy closing / disconnect</button>
+            </div>
+            <p class="howto" style="margin-top:0.65rem"><strong>Pre-oracle checklist</strong> (saved in browser)</p>
+            <ul class="checklist" id="prepChecklist">
+              <li><label><input type="checkbox" data-key="feet" /> Feet on floor / spine tall</label></li>
+              <li><label><input type="checkbox" data-key="breath" /> One slow breath taken</label></li>
+              <li><label><input type="checkbox" data-key="journal" /> Pen or notes ready for first impression</label></li>
+              <li><label><input type="checkbox" data-key="hydrate" /> Water / not running on empty</label></li>
+            </ul>
+            <label class="howto" for="sessionJournal" style="display:block;margin-top:0.75rem"><strong>Session log</strong> — first guess, hits, dreams</label>
+            <textarea id="sessionJournal" class="session-journal" placeholder="e.g. Round 3: felt middle card before flip — Tier 4 ✓"></textarea>
+            <p class="journal-meta" id="journalSaved">Autosaves locally in this browser.</p>
+          </div>
+          <div class="tips-panel">
+            <h3>🧠 ESP &amp; intuition tips</h3>
+            <div id="tipDisplay"></div>
+            <div class="tip-nav">
+              <button type="button" class="btn btn-ghost" id="tipPrev">◀</button>
+              <button type="button" class="btn btn-ghost" id="tipRand">✨ Random</button>
+              <button type="button" class="btn btn-ghost" id="tipNext">▶</button>
+            </div>
+          </div>
+          <div class="tips-panel">
+            <h3>📿 Gentle ethics</h3>
+            <p class="howto">
+              ESP practice is about <strong>inner clarity</strong>, not control over others. Use journaling to check hits vs. misses. Stay grounded: sleep, food, and calm breath beat &quot;forcing&quot; visions. This game trains <strong>attention and playful guessing</strong> — not proof of the paranormal.
+            </p>
+          </div>
+        </aside>
+      </details>
+
+      <div class="grimoire-curated-reading" id="grimoire-curated-reading">
+        <h2>Curated further reading (mixed perspectives)</h2>
+        <ul>
+          <li>
+            <a href="https://en.wikipedia.org/wiki/Parapsychology" rel="noopener noreferrer" target="_blank">Parapsychology (Wikipedia)</a> — field overview, methods, and debates.
+          </li>
+          <li>
+            <a href="https://en.wikipedia.org/wiki/Anomalistic_psychology" rel="noopener noreferrer" target="_blank">Anomalistic psychology (Wikipedia)</a> — psychological approaches to apparently paranormal reports.
+          </li>
+          <li>
+            <a href="https://plato.stanford.edu/entries/parapsychology/" rel="noopener noreferrer" target="_blank">Parapsychology (Stanford Encyclopedia of Philosophy)</a> — academic framing, philosophy of science, and research ethics.
+          </li>
+          <li>
+            <a href="https://en.wikipedia.org/wiki/Research_ethics" rel="noopener noreferrer" target="_blank">Research ethics (Wikipedia)</a> — consent, care, and rigor in studies involving people.
+          </li>
+          <li>
+            <a href="https://en.wikipedia.org/wiki/Metacognition" rel="noopener noreferrer" target="_blank">Metacognition (Wikipedia)</a> — thinking about thinking; useful for separating signal from self-story in practice.
+          </li>
+          <li>
+            <a href="https://en.wikipedia.org/wiki/Decision-making" rel="noopener noreferrer" target="_blank">Decision-making (Wikipedia)</a> — heuristics, bias, and how intuition fits next to analysis.
+          </li>
+        </ul>
+        <p class="pro-disclaimer">Links are a starting list for learning; the authors of Ascension do not endorse every claim in third-party material. Use critical reading and, where health is concerned, work with qualified professionals. If you are in acute crisis, contact <strong>local emergency services</strong> or a <strong>national / regional helpline</strong> where you live; this app is not a crisis service.</p>
+      </div>
+
+      <a class="grimoire-cta" href="#game">🃏 Play the Queen game</a>
+      <a class="grimoire-cta is-pro-only" href="#pro" style="margin-top:0.5rem">🎴 Open Master level (five-card game)</a>
+      <div class="is-pro-only" id="grimoire-pro-extend" aria-label="Pro extended (Master level)">
+      <section class="grimoire" id="grimoire-pro-extend-section" aria-label="Pro extended grimoire">
+        <h2 class="grimoire-title" style="margin-top:0">Pro grimoire (Master) — leveled-up practices</h2>
+        <p class="grimoire-lede">Denser material: assume you already know the basics in the main grimoire (P1–P6). Add slowly; skip anything that feels off.</p>
+        <div class="grimoire-body pro-g-extended" style="margin-top:0.5rem">
+          <details class="grimoire-part" id="pro-g-ground" open>
+            <summary>Leveled up grounding: beyond the root cord</summary>
+            <div>
+              <h3>1. The Earth grid anchor (planetary circuit)</h3>
+              <p><strong>Basic:</strong> a single cord to Earth’s core.</p>
+              <p>
+                <strong>Leveled up:</strong> visualize <strong>five</strong> grounding points simultaneously: soles of both feet, perineum, palms of both hands. From each, send a crystalline filament down or out to connect to the
+                Earth’s subtle energy grid (ley lines, planetary chakras). Feel your personal field lock into the planet’s geomagnetic rhythm. In many traditions, this is said to help reduce psychic “bleed” and
+                to settle lower-astral static. Treat it as a somatic+imaginal exercise, not a claim about physics.
+              </p>
+              <h3>2. The cosmic drain (reverse grounding)</h3>
+              <p>After deep Earth contact, you can imagine drawing subtle presence downward from a wide, calm sky-ward direction (a symbol some maps call “upward to galactic center”), meeting your crown, flowing through, and
+                spilling to root into Earth—like rinsing. Intention: to clear “dense” or sticky imagery and rumination after long sessions. <strong>Stop or simplify</strong> if you get dizzy, hollow, or headachey.</p>
+              <h3>3. Grounding in motion (kinesthetic)</h3>
+              <p>Walk barefoot on natural ground when you can. With each step, mentally: “this foot knows the weight of the planet” — then: “this foot knows the openness of the sky” — and alternate. You are training
+                a felt contrast between <em>earthing</em> and <em>lifting</em>, not forcing beliefs.</p>
+            </div>
+          </details>
+
+          <details class="grimoire-part" id="pro-g-chi">
+            <summary>Leveled up prana / chi: advanced “energetic plumbing”</summary>
+            <div>
+              <h3>1. The microcosmic orbit — add depth</h3>
+              <p><strong>Basic:</strong> path often mapped belly → perineum → spine → crown → palette → belly.</p>
+              <p>
+                <strong>Leveled up (imaginal):</strong> if your lineage maps a horizontal “belt” around the trunk and “thrusting” or side channels, you can <em>gently</em> explore them as a full-body circuit, always without strain.
+                Breathe, soften jaw, and stop if you feel head pressure, unsteadiness, or detachment. These maps vary—follow a teacher in those traditions; don’t contort the body into pain.
+              </p>
+              <h3>2. Prana retention and bandha-style work</h3>
+              <p>Some pranayama lineages add mild locks after inhale, with short, comfortable retentions, then release. <strong>Do not</strong> force long breath holds from a web page. If you explore formal bandha
+                training, do it with in-person instruction, stay within a range where you are never dizzy, darkening vision, or chest-pressing. A mild hold that stays pleasant is a better signal than a heroic one.</p>
+              <h3>3. Chi vortex (imaginal) for “scanning” exercises</h3>
+              <p>After you have a calm warm-cool felt sense between the hands, it can be framed as a gentle cone in front of a neutral, consented target. Intention is not “punch through privacy”—it is soft perception practice.
+                <strong>Ethical rule:</strong> for anything involving people, default to <em>obvious consent</em> and avoid fixation on a specific person in distress without support.</p>
+            </div>
+          </details>
+
+          <details class="grimoire-part" id="pro-g-esp">
+            <summary>Leveled up ESP techniques and experiments</summary>
+            <div>
+              <h3>Remote viewing — stricter protocols</h3>
+              <p>Advanced RV work in published literature is sessioned, blinding is strict, and data is pre-registered where possible. For personal practice, think “journaling+analysis,” not public proof. If a method promises
+                “bypass the logical mind with contradictory questions,” use it <strong>as a creativity trick</strong>, and still log your guesses ahead of time.</p>
+              <h3>“Signal hygiene” and shielding</h3>
+              <p>Asking for cleaner inner quiet can be a useful metaphor (filters, room tone, “Faraday of attention”). The science story is: reduce rumination, reduce sensory overload, sleep well. Pair visualization with
+                <strong>sleep, therapy when needed, and not listening at people who are struggling without consent</strong>.</p>
+              <h3>Dream ESP and anchors</h3>
+              <p>Water-on-nightstand, intention phrases, and morning writing are <strong>standard dream-work hygiene</strong>. The water is a ritual object if you like rituals; the science bit is: consistent recall practice.</p>
+              <h3>Bilocation and “double” work</h3>
+              <p>Any practice that suggests sending an “energetic copy” to real rooms: keep it in your own home first, treat it as a memory+imagination test, and avoid weaponizing the idea. High anxiety can mimic “travel”—ground first.</p>
+              <h3>Psychometry with distance</h3>
+              <p>“No touch” is still somatic: you are noticing micro muscle tension, breathing change, and expectation. If you do object work, <strong>never</strong> replace medical or legal fact-finding with impressions.</p>
+              <h3>Theta / gamma and advanced states</h3>
+              <p>“Wide awake and deeply relaxed at once” is a <strong>real meditation target</strong> in some lineages, but reports of OBE-like phenomena exist and can be unsettling. Always anchor: feet on floor, a physical object, time
+                on a clock, and a friend who knows you practice. <strong>Stop and seek help</strong> if you feel you are losing a grip on reality—some experiences overlap with health issues.</p>
+            </div>
+          </details>
+
+          <details class="grimoire-part" id="pro-g-ethics">
+            <summary>Advanced ethics, hygiene, and a one-week challenge (summarized)</summary>
+            <div>
+              <h3>Three habits from the “leveled up” list</h3>
+              <ul>
+                <li>Don’t do covert “scanning” of other people. If you get a no-feeling, <strong>stop</strong>—treat that as a boundary, not a puzzle to break.</li>
+                <li><strong>Write and date</strong> time-sensitive intuitive hits before you open feedback—reduces your own later editing and hindsight bias (not a physics claim; it’s a logging habit).</li>
+                <li>After long sessions, cool water on hands, stretch, and walk. Basic nervous-system reset, whatever words you use for it.</li>
+              </ul>
+              <h3>“One week” challenge (compressed from your outline)</h3>
+              <ol>
+                <li>Two days: short sessions on a five-point grounding image you can sustain without tension.</li>
+                <li>One day: gentle pranayama only—no record-breaking breath holds; comfort first.</li>
+                <li>One day: a few at-home object impressions at distance, with honest logging (hits and misses).</li>
+                <li>One day: a single, quiet RV-style prompt with a blindable photo if you can.</li>
+                <li>One day: light dream protocol + one paragraph on wake.</li>
+                <li>One day: calm sitting that mixes open eyes with relaxed body, short duration, stone-in-hand if it helps; stop on weird dissociation.</li>
+                <li>Journal compare: the “leveled up” product is <strong>discernment and steadiness</strong>, not a bigger story about yourself.</li>
+              </ol>
+              <p>Original prompt included detailed bandha timings, a “<span style="font-style:italic">300%</span>” anecdotal claim, and a full seven-day runbook. We <strong>trimmed the medical-adjacent intensity</strong> of breath holds and numeric promises while keeping
+                the spirit of a progressive week. <strong>Always</strong> defer to a qualified teacher for formal bandha, and a clinician for new neurological or psychiatric symptoms.</p>
+            </div>
+          </details>
+        </div>
+        <p class="pro-back-top"><a href="#grimoire">↑ Back to grimoire top</a></p>
+      </section>
+      </div>
+    </section>
+    </section>
+
+    <section id="game" class="app-screen" aria-label="Queen card game">
+      <div class="screen-top-bar">
+        <a href="#title" class="btn-back-title">← Title</a>
+      </div>
+
+    <div id="card-game" class="hud">
+      <div class="hud-pill">🔥 <strong>Streak</strong> <span id="score">0</span></div>
+      <div class="hud-pill">✅ <strong>Wins</strong> <span id="lifetimeScore">0</span></div>
+      <div class="hud-pill">⬆️ <strong>Rank</strong> <span id="tier">—</span></div>
+      <div class="hud-pill">🃏 <strong>Round</strong> <span id="round">1</span></div>
+      <div class="hud-pill">🎲 <strong>Played</strong> <span id="spreadCount">0</span></div>
+    </div>
+
+    <div class="game-row game-row-standalone">
+      <section class="board" aria-label="Queen of Spades trainer">
+        <h2>🃏 THE SPREAD — Queen tracker</h2>
+        <p class="phase-msg" id="phaseMsg">Watch the Queens; the cards will flip, shuffle, then you find the Queen of Spades.</p>
+        <div class="queen-toolbar">
+          <div class="queen-difficulty">
+            <span class="queen-label">Difficulty</span>
+            <button type="button" class="queen-chip" id="diffBasic" data-diff="basic">Basic</button>
+            <button type="button" class="queen-chip" id="diffCombo" data-diff="combo">Suit combo</button>
+          </div>
+        </div>
+        <div class="queen-card-row" id="queenCardRow" role="group" aria-label="Three cards"></div>
+        <div class="controls">
+          <button type="button" class="btn" id="btnDeal">🔀 New round</button>
+          <button type="button" class="btn btn-ghost" id="btnShortcuts" title="Keyboard shortcuts">⌨️ Keys</button>
+        </div>
+        <div class="result-box" id="resultBox" role="status">
+          Same trainer as the main app: three Queens are shown, then backs shuffle in place. Pick the Queen of Spades. <strong>Suit combo</strong> adds a second Queen to find without reshuffling.
+        </div>
+        <p class="howto" style="margin-top:0.85rem">
+          <strong>How to play:</strong> Wait for shuffling to finish, then click the card you believe is the <strong>Queen of Spades</strong>. In <strong>Suit combo</strong>, after a correct first pick you must click the Queen of <em>Hearts</em> or <em>Diamonds</em> as instructed.
+        </p>
+        <p class="howto" style="margin-top:0.55rem">
+          Breath, checklist, session log, and tips: <a href="#grimoire-toolkit" style="color:var(--teal);font-weight:600">Grimoire &amp; help</a> (session toolkit) · <a href="#grimoire-curated-reading" style="color:var(--teal);font-weight:600">Further reading</a>.
+        </p>
+        <p class="howto" style="margin-top:0.35rem">
+          <span id="keysHint" style="opacity:0.85">Shortcuts: <kbd>N</kbd> new round · <kbd>?</kbd> keyboard help</span>
+        </p>
+      </section>
+    </div>
+
+    </section>
+
+    <section id="records" class="app-screen" aria-label="Records and achievements">
+      <div class="screen-top-bar">
+        <a href="#title" class="btn-back-title">← Title</a>
+      </div>
+
+    <section class="records-section" aria-label="Local records and achievements">
+      <details class="grimoire-part records-details" id="recordsPanel" open>
+        <summary>
+          🏆 Local records &amp; achievements
+          <span class="ach-pill" id="achProgressPill"></span>
+        </summary>
+        <div class="grimoire-body records-body">
+          <div class="records-grid">
+            <div class="records-col">
+              <h3>Personal bests</h3>
+              <ul class="rec-list" id="personalRecords"></ul>
+              <h3>Pro (five-card) <a class="pro-rec-mute" href="#pro">#pro</a></h3>
+              <ul class="rec-list" id="proRecList"></ul>
+              <h3>Leaderboard — top spreads</h3>
+              <p class="howto" style="margin-bottom:0.5rem">Last 10 rounds on this device (newest first).</p>
+              <div class="table-wrap">
+                <table class="leaderboard-table" aria-label="Top spread scores">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Result</th>
+                      <th>Mode</th>
+                      <th>When</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaderboardBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="records-col">
+              <h3>Achievements <span class="ach-count" id="achUnlockedCount"></span></h3>
+              <p class="howto" style="margin-bottom:0.65rem">Achievements are tied to the <strong>Queen tracker</strong> only. Pro has separate stats below. Full reset (title menu) clears both; export a backup on Pro if you need your numbers.</p>
+              <div class="achievements-grid" id="achievementsGrid"></div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    </section>
+    <section id="pro" class="app-screen pro-screen" aria-label="Master level five-card game">
+      <div class="screen-top-bar">
+        <a href="#title" class="btn-back-title">← Title</a>
+      </div>
+      <p class="pro-lede">The extended grimoire lives under <a href="#grimoire" style="color:var(--teal);font-weight:600">Grimoire &amp; help</a> when Pro is on. Color schemes are in <strong>Settings</strong>. Not medical, legal, or professional advice.</p>
+      <nav class="pro-nav" aria-label="Master level page">
+        <a href="#pro-five">Five-card</a>
+        <a href="#grimoire-pro-extend">Pro grimoire in guide</a>
+        <a href="#grimoire-curated-reading">Further reading (grimoire)</a>
+        <a href="#pro-utils">Data &amp; tools</a>
+      </nav>
+
+      <div id="pro-five" class="pro-board" aria-label="Pro five-card game">
+        <h2>🎴 Master level — five-card find</h2>
+        <p class="pro-target-line" id="proTargetMsg">—</p>
+        <p class="phase-msg" id="proPhaseMsg">Press <strong>New round</strong> to start.</p>
+        <div class="pro-hud" role="status" aria-label="Pro round stats">
+          <div class="hud-pill">🔥 <strong>Streak</strong> <span id="proScore">0</span></div>
+          <div class="hud-pill">✅ <strong>Wins</strong> <span id="proWins">0</span></div>
+          <div class="hud-pill">🃏 <strong>Round</strong> <span id="proRound">0</span></div>
+        </div>
+        <div class="queen-card-row five" id="proCardRow" role="group" aria-label="Five cards"></div>
+        <div class="controls">
+          <button type="button" class="btn" id="btnProRound">🔀 New round</button>
+        </div>
+        <div class="result-box" id="proResultBox" role="status" aria-live="polite">Five unique cards (three Queens, Queen of Clubs, and a Joker). The game master names a <strong>sequence</strong> of all five: you have four steps to <strong>find the next card</strong> on the board. Correct picks are marked off; after four, one card is left and the win is clear. Placeholder art appears if <code>cards/queen_clubs.png</code> or <code>cards/joker.png</code> is missing. <kbd>N</kbd> starts a new round (when not typing in a field).</div>
+      </div>
+
+      <div id="pro-utils" class="pro-utils" aria-label="Data, backup, and shortcuts">
+        <h2>Data, backup &amp; Pro shortcuts</h2>
+        <p class="howto" style="margin:0 0 0.55rem">Everything below uses only this browser. <strong>Export a JSON backup</strong> before changing devices, clearing site data, or if you use <strong>Reset</strong> on the title (which will also clear Pro stats with the same confirm).</p>
+        <div class="pro-tool-row copy-row">
+          <button type="button" class="btn btn-ghost" id="btnProCopyUrl">Copy link to Master level</button>
+          <button type="button" class="btn btn-ghost" id="btnExportJson">⬇ Export all Ascension data</button>
+        </div>
+        <p class="howto" style="margin:0.3rem 0 0.35rem"><strong>Import backup</strong> (replaces keys that exist in the file; cannot undo):</p>
+        <div class="pro-tool-row copy-row">
+          <input type="file" id="importAscFile" accept="application/json,.json" style="max-width: min(100%, 280px); font-size:0.8rem" />
+        </div>
+        <p class="howto" style="margin:0.4rem 0 0.35rem"><strong>Pro only:</strong> reset the five-card streak, wins, and play count here without touching the main game.</p>
+        <div class="pro-tool-row copy-row">
+          <button type="button" class="btn btn-ghost" id="btnResetPro">Reset Pro stats</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      /** Card PNGs: same files as `frontend/dist/cards/` (copied to `ascension-cards/cards/` and `frontend/public/cards/`). */
+      const CARD_BACK_SRC = "cards/back.png";
+      const QUEEN_FACE_ALT = {
+        QS: "Queen of Spades",
+        QH: "Queen of Hearts",
+        QD: "Queen of Diamonds",
+      };
+      const BASE_CARDS = [
+        { id: "QS", suit: "spades", faceSrc: "cards/queen_spades.png" },
+        { id: "QH", suit: "hearts", faceSrc: "cards/queen_hearts.png" },
+        { id: "QD", suit: "diamonds", faceSrc: "cards/queen_diamonds.png" },
+      ];
+
+      const ESP_TIPS = [
+        { title: "Journal the signal", emoji: "📓", text: "After a hunch, write what you felt and what actually happened. Over weeks you learn your personal noise vs. signal — no mysticism required, just honest feedback." },
+        { title: "Body first", emoji: "🫁", text: "Tension, hunger, and fatigue mimic \"psychic\" flutter. One slow breath, unclench jaw, then ask your question. Grounding sharpens subtle perception." },
+        { title: "First impression", emoji: "⚡", text: "For practice, note your instant guess before analyzing. Games like this train that split-second read without attachment to being right." },
+        { title: "Dream residue", emoji: "🌅", text: "Keep a voice memo by the bed; one sentence on waking. Patterns emerge in symbols and mood — useful for creativity and self-knowledge." },
+        { title: "Blind targets (ethical)", emoji: "🎯", text: "Have a friend seal a simple photo in an envelope. Guess colors or mood before opening. Log results; variance is normal — you're training process, not proving TV." },
+        { title: "Reduce leakage", emoji: "🔇", text: "Don't talk through your guess mid-reading; say it once, record it. Conversation can accidentally \"edit\" memory of what you first thought." },
+        { title: "Sensory modes", emoji: "👂", text: "Some people get images, some words, some gut twinge. Notice your channel; strengthen it with short daily \"what's around the corner\" micro-tests you can verify." },
+        { title: "Patience over performance", emoji: "🐢", text: "Pressure kills subtle signal. Treat misses as data. The goal is a calmer, more attentive mind — extrasensory or not, that's real skill." },
+        { title: "Regression to the mean", emoji: "📉", text: "Streaks of \"hits\" and \"misses\" both happen by chance. Log enough trials and you'll see variance — that's why honest journaling beats remembering only wins." },
+        { title: "Light & sleep", emoji: "🌤️", text: "Dim screens an hour before subtle work when you can. Melatonin and overstimulation affect how \"thin\" your mental static feels in the morning." },
+      ];
+
+      const LS = {
+        queenStreak: "ascension_v1_queen_streak",
+        queenWins: "ascension_v1_queen_wins",
+        queenPlayed: "ascension_v1_queen_played",
+        queenHistory: "ascension_v1_queen_history",
+        journal: "ascension_v1_journal",
+        checklist: "ascension_v1_prep",
+        gameRecords: "ascension_v1_queen_records",
+        achievements: "ascension_v1_achievements",
+        legacyLifetime: "ascension_v1_lifetime_resonance",
+        legacySpreads: "ascension_v1_spreads",
+        legacyLeaderboard: "ascension_v1_leaderboard",
+        legacyGameRecords: "ascension_v1_game_records",
+      };
+
+      const DEFAULT_QUEEN_RECORDS = {
+        bestStreak: 0,
+        comboWins: 0,
+        basicWins: 0,
+      };
+
+      function loadGameRecords() {
+        try {
+          const raw = localStorage.getItem(LS.gameRecords);
+          return raw ? { ...DEFAULT_QUEEN_RECORDS, ...JSON.parse(raw) } : { ...DEFAULT_QUEEN_RECORDS };
+        } catch {
+          return { ...DEFAULT_QUEEN_RECORDS };
+        }
+      }
+
+      function saveGameRecords(rec) {
+        localStorage.setItem(LS.gameRecords, JSON.stringify(rec));
+      }
+
+      function loadHistory() {
+        try {
+          const raw = localStorage.getItem(LS.queenHistory);
+          const arr = raw ? JSON.parse(raw) : [];
+          return Array.isArray(arr) ? arr : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveHistory(arr) {
+        localStorage.setItem(LS.queenHistory, JSON.stringify(arr.slice(0, 10)));
+      }
+
+      function loadAchUnlocked() {
+        try {
+          const raw = localStorage.getItem(LS.achievements);
+          return new Set(raw ? JSON.parse(raw) : []);
+        } catch {
+          return new Set();
+        }
+      }
+
+      function saveAchUnlocked(set) {
+        localStorage.setItem(LS.achievements, JSON.stringify([...set]));
+      }
+
+      function escapeHtml(str) {
+        const d = document.createElement("div");
+        d.textContent = str;
+        return d.innerHTML;
+      }
+
+      const ACHIEVEMENTS = [
+        { id: "q_first", icon: "🃏", title: "First round", desc: "Finish a Queen round.", check: (c) => c.played >= 1 },
+        { id: "q_win1", icon: "✨", title: "Found her", desc: "Win once (Queen of Spades).", check: (c) => c.wins >= 1 },
+        { id: "q_win10", icon: "🔟", title: "Ten wins", desc: "Win 10 rounds.", check: (c) => c.wins >= 10 },
+        { id: "q_play50", icon: "💫", title: "Fifty tries", desc: "Play 50 rounds.", check: (c) => c.played >= 50 },
+        { id: "q_streak3", icon: "🔥", title: "Apprentice", desc: "Reach a 3-win streak.", check: (c) => c.records.bestStreak >= 3 },
+        { id: "q_streak6", icon: "🌟", title: "Master", desc: "Reach a 6-win streak.", check: (c) => c.records.bestStreak >= 6 },
+        { id: "q_streak9", icon: "☀️", title: "Enlightened", desc: "Reach a 9-win streak.", check: (c) => c.records.bestStreak >= 9 },
+        { id: "q_combo1", icon: "♦️", title: "Combo starter", desc: "Win a Suit combo round.", check: (c) => c.records.comboWins >= 1 },
+        { id: "q_combo10", icon: "🎯", title: "Combo regular", desc: "Win 10 Suit combo rounds.", check: (c) => c.records.comboWins >= 10 },
+      ];
+
+      function evaluateAndSaveAchievements(ctx) {
+        const unlocked = loadAchUnlocked();
+        const newly = [];
+        for (const a of ACHIEVEMENTS) {
+          if (unlocked.has(a.id)) continue;
+          if (a.check(ctx)) {
+            unlocked.add(a.id);
+            newly.push(a);
+          }
+        }
+        if (newly.length) saveAchUnlocked(unlocked);
+        return newly;
+      }
+
+      function renderRecordsUi() {
+        const rec = loadGameRecords();
+        const board = loadHistory();
+        const unlocked = loadAchUnlocked();
+        const winsShown = parseInt(localStorage.getItem(LS.queenWins) || "0", 10);
+        const playedShown = parseInt(localStorage.getItem(LS.queenPlayed) || "0", 10);
+        const pr = document.getElementById("personalRecords");
+        if (pr) {
+          pr.innerHTML = [
+            "<li><span>Best win streak</span><span>" + rec.bestStreak + "</span></li>",
+            "<li><span>Total wins</span><span>" + winsShown + "</span></li>",
+            "<li><span>Basic mode wins</span><span>" + rec.basicWins + "</span></li>",
+            "<li><span>Suit combo wins</span><span>" + rec.comboWins + "</span></li>",
+            "<li><span>Rounds played</span><span>" + playedShown + "</span></li>",
+          ].join("");
+        }
+        const prPro = document.getElementById("proRecList");
+        if (prPro) {
+          const ps = parseInt(localStorage.getItem("ascension_pro_streak") || "0", 10) || 0;
+          const pw = parseInt(localStorage.getItem("ascension_pro_wins") || "0", 10) || 0;
+          const pp = parseInt(localStorage.getItem("ascension_pro_played") || "0", 10) || 0;
+          prPro.innerHTML =
+            "<li><span>Streak</span><span>" + ps + "</span></li>" +
+            "<li><span>Wins (total)</span><span>" + pw + "</span></li>" +
+            "<li><span>Rounds played</span><span>" + pp + "</span></li>";
+        }
+        const tbody = document.getElementById("leaderboardBody");
+        if (tbody) {
+          if (!board.length) {
+            tbody.innerHTML =
+              '<tr><td colspan="4" class="lb-empty">No rounds yet — play the Queen tracker above.</td></tr>';
+          } else {
+            tbody.innerHTML = board
+              .map(function (row, i) {
+                var when = new Date(row.t).toLocaleString([], {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+                return (
+                  "<tr><td class=\"lb-rank\">" +
+                  (i + 1) +
+                  "</td><td>" +
+                  (row.success ? "Win" : "Loss") +
+                  "</td><td>" +
+                  (row.difficulty === "combo" ? "Suit combo" : "Basic") +
+                  "</td><td>" +
+                  when +
+                  "</td></tr>"
+                );
+              })
+              .join("");
+          }
+        }
+        const grid = document.getElementById("achievementsGrid");
+        if (grid) {
+          grid.innerHTML = ACHIEVEMENTS.map(function (a) {
+            var ok = unlocked.has(a.id);
+            return (
+              '<div class="ach-card ' +
+              (ok ? "unlocked" : "locked") +
+              '"><span class="ach-ic">' +
+              a.icon +
+              '</span><div class="ach-meta"><strong>' +
+              a.title +
+              "</strong><span>" +
+              a.desc +
+              "</span></div></div>"
+            );
+          }).join("");
+        }
+        var pill = document.getElementById("achProgressPill");
+        var cnt = document.getElementById("achUnlockedCount");
+        if (pill) pill.textContent = "(" + unlocked.size + "/" + ACHIEVEMENTS.length + ")";
+        if (cnt) cnt.textContent = unlocked.size + " / " + ACHIEVEMENTS.length;
+      }
+      try {
+        window.ascensionRenderRecords = renderRecordsUi;
+      } catch (e) {}
+
+      let queenStreak = parseInt(localStorage.getItem(LS.queenStreak) || "0", 10);
+      let queenWins = parseInt(localStorage.getItem(LS.queenWins) || "0", 10);
+      let queenPlayed = parseInt(localStorage.getItem(LS.queenPlayed) || "0", 10);
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      const INTENT_TEXT =
+        "I only connect to information that is for my highest good and the highest good of all. I disconnect from any energy that is not mine.";
+      const DISCONNECT_TEXT =
+        "I release cords and impressions that are not mine. I return foreign energy to source with gratitude. I rest in my own field.";
+
+      const toastEl = document.getElementById("toast");
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toastEl.classList.remove("show"), 2200);
+      }
+
+      const scoreEl = document.getElementById("score");
+      const lifetimeScoreEl = document.getElementById("lifetimeScore");
+      const tierEl = document.getElementById("tier");
+      const spreadCountEl = document.getElementById("spreadCount");
+      function streakRank(s) {
+        if (s >= 9) return "Enlightened";
+        if (s >= 6) return "Master";
+        if (s >= 3) return "Apprentice";
+        return "—";
+      }
+
+      function syncHudLifetime() {
+        scoreEl.textContent = String(queenStreak);
+        lifetimeScoreEl.textContent = String(queenWins);
+        spreadCountEl.textContent = String(queenPlayed);
+        tierEl.textContent = streakRank(queenStreak);
+      }
+      syncHudLifetime();
+      renderRecordsUi();
+
+      document.getElementById("btnExpandGrimoire").addEventListener("click", () => {
+        document
+          .querySelectorAll(
+            '#grimoire-toolkit, details.grimoire-part[id^="grimoire-p"], details.grimoire-part[id^="pro-g-"]',
+          )
+          .forEach((d) => {
+            d.open = true;
+          });
+      });
+      document.getElementById("btnCollapseGrimoire").addEventListener("click", () => {
+        document
+          .querySelectorAll(
+            '#grimoire-toolkit, details.grimoire-part[id^="grimoire-p"], details.grimoire-part[id^="pro-g-"]',
+          )
+          .forEach((d) => {
+            d.open = false;
+          });
+      });
+
+      const breathSeq = [
+        { label: "Inhale", sec: 4 },
+        { label: "Hold", sec: 2 },
+        { label: "Exhale", sec: 6 },
+      ];
+      const breathRing = document.getElementById("breathRing");
+      const breathPhaseEl = document.getElementById("breathPhase");
+      const breathCountEl = document.getElementById("breathCount");
+      const btnBreath = document.getElementById("btnBreath");
+      let breathRunning = false;
+      let breathTimer = null;
+      let breathPhaseI = 0;
+      let breathRemain = breathSeq[0].sec;
+
+      function breathCycleTotal() {
+        return breathSeq.reduce((s, x) => s + x.sec, 0);
+      }
+
+      function updateBreathRing() {
+        const total = breathCycleTotal();
+        const base = breathSeq.slice(0, breathPhaseI).reduce((s, x) => s + x.sec, 0);
+        const cur = breathSeq[breathPhaseI];
+        const p = Math.min(100, ((base + (cur.sec - breathRemain)) / total) * 100);
+        breathRing.style.setProperty("--p", p + "%");
+      }
+
+      btnBreath.addEventListener("click", () => {
+        if (breathRunning) {
+          breathRunning = false;
+          clearInterval(breathTimer);
+          breathTimer = null;
+          btnBreath.textContent = "▶ Start breathing";
+          breathRing.style.setProperty("--p", "0%");
+          breathPhaseEl.textContent = "Ready";
+          breathCountEl.textContent = "—";
+          breathPhaseI = 0;
+          breathRemain = breathSeq[0].sec;
+          return;
+        }
+        breathRunning = true;
+        btnBreath.textContent = "⏹ Stop";
+        breathPhaseI = 0;
+        breathRemain = breathSeq[0].sec;
+        function breathTick() {
+          if (!breathRunning) return;
+          const cur = breathSeq[breathPhaseI];
+          breathPhaseEl.textContent = cur.label;
+          breathCountEl.textContent = String(breathRemain);
+          updateBreathRing();
+          breathRemain -= 1;
+          if (breathRemain <= 0) {
+            breathPhaseI = (breathPhaseI + 1) % breathSeq.length;
+            breathRemain = breathSeq[breathPhaseI].sec;
+          }
+        }
+        breathTick();
+        breathTimer = setInterval(breathTick, 1000);
+      });
+
+      document.getElementById("copyIntent").addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(INTENT_TEXT);
+          showToast("Copied protection intention ✓");
+        } catch {
+          showToast("Couldn't copy — select text manually");
+        }
+      });
+      document.getElementById("copyDisconnect").addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(DISCONNECT_TEXT);
+          showToast("Copied closing lines ✓");
+        } catch {
+          showToast("Couldn't copy — select text manually");
+        }
+      });
+
+      const prepChecklist = document.getElementById("prepChecklist");
+      const prepState = JSON.parse(localStorage.getItem(LS.checklist) || "{}");
+      prepChecklist.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        cb.checked = !!prepState[cb.dataset.key];
+        cb.addEventListener("change", () => {
+          prepState[cb.dataset.key] = cb.checked;
+          localStorage.setItem(LS.checklist, JSON.stringify(prepState));
+        });
+      });
+
+      const sessionJournal = document.getElementById("sessionJournal");
+      const journalSaved = document.getElementById("journalSaved");
+      sessionJournal.value = localStorage.getItem(LS.journal) || "";
+      let journalTimeout;
+      sessionJournal.addEventListener("input", () => {
+        clearTimeout(journalTimeout);
+        journalSaved.textContent = "Saving…";
+        journalTimeout = setTimeout(() => {
+          localStorage.setItem(LS.journal, sessionJournal.value);
+          journalSaved.textContent = "Saved locally · " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        }, 450);
+      });
+
+      document.getElementById("btnResetStats").addEventListener("click", () => {
+        if (
+          !confirm(
+            "Reset Queen tracker, Pro five-card stats, achievements, journal, and prep checklist on this device? (Cannot be undone. Export a backup on Pro if you need a copy first.)",
+          )
+        ) {
+          return;
+        }
+        localStorage.removeItem(LS.queenStreak);
+        localStorage.removeItem(LS.queenWins);
+        localStorage.removeItem(LS.queenPlayed);
+        localStorage.removeItem(LS.queenHistory);
+        localStorage.removeItem(LS.gameRecords);
+        localStorage.removeItem(LS.achievements);
+        localStorage.removeItem(LS.journal);
+        localStorage.removeItem(LS.checklist);
+        localStorage.removeItem(LS.legacyLifetime);
+        localStorage.removeItem(LS.legacySpreads);
+        localStorage.removeItem(LS.legacyLeaderboard);
+        localStorage.removeItem(LS.legacyGameRecords);
+        localStorage.removeItem("ascension_pro_streak");
+        localStorage.removeItem("ascension_pro_wins");
+        localStorage.removeItem("ascension_pro_played");
+        queenStreak = 0;
+        queenWins = 0;
+        queenPlayed = 0;
+        syncHudLifetime();
+        if (window.ascensionProHudRefresh) window.ascensionProHudRefresh();
+        sessionJournal.value = "";
+        journalSaved.textContent = "Cleared.";
+        prepChecklist.querySelectorAll("input").forEach((cb) => {
+          cb.checked = false;
+        });
+        Object.keys(prepState).forEach((k) => delete prepState[k]);
+        renderRecordsUi();
+      });
+
+      function shortcutsHelp() {
+        const sc = document.documentElement.getAttribute("data-app-screen");
+        if (sc === "pro") {
+          const prb = document.getElementById("proResultBox");
+          if (prb) {
+            prb.innerHTML =
+              "<strong>Pro screen</strong> · <kbd>N</kbd> new five-card round · <kbd>?</kbd> this help · <kbd>Esc</kbd> closes Settings if open. Three-card help lives on the main game screen.";
+          }
+          return;
+        }
+        resultBox.innerHTML =
+          "<strong>Keyboard</strong> (when not typing in the grimoire session log): <kbd>N</kbd> new round · <kbd>?</kbd> this panel · <kbd>Esc</kbd> stops the breath timer (session toolkit is in the grimoire). On the <strong>Pro</strong> screen, <kbd>N</kbd> and <kbd>?</kbd> apply to the five-card trainer only.";
+      }
+
+      const queenCardRow = document.getElementById("queenCardRow");
+      const phaseMsg = document.getElementById("phaseMsg");
+      const resultBox = document.getElementById("resultBox");
+      const roundEl = document.getElementById("round");
+      const btnDeal = document.getElementById("btnDeal");
+      const diffBasic = document.getElementById("diffBasic");
+      const diffCombo = document.getElementById("diffCombo");
+      const sparkleLayer = document.getElementById("sparkleLayer");
+      const tipDisplay = document.getElementById("tipDisplay");
+      let tipIndex = 0;
+
+      let sessionRound = 1;
+      /** @type {"intro"|"show_faces"|"covered"|"shuffling"|"waiting_for_pick"|"waiting_for_second_pick"|"round_result"} */
+      let phase = "intro";
+      /** @type {typeof BASE_CARDS} */
+      let cards = [];
+      /** @type {"basic"|"combo"} */
+      let difficulty = "basic";
+      let pickedIndex = null;
+      let secondPickedIndex = null;
+      /** @type {"hearts"|"diamonds"|null} */
+      let targetSuit = null;
+      let queenMessage = "";
+      let shuffleRaf = null;
+
+      function shuffleOrder(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function syncDifficultyChips() {
+        diffBasic.classList.toggle("is-selected", difficulty === "basic");
+        diffCombo.classList.toggle("is-selected", difficulty === "combo");
+      }
+
+      function canChangeDifficulty() {
+        return phase === "round_result" || phase === "intro";
+      }
+
+      diffBasic.addEventListener("click", () => {
+        if (!canChangeDifficulty()) return;
+        difficulty = "basic";
+        syncDifficultyChips();
+      });
+      diffCombo.addEventListener("click", () => {
+        if (!canChangeDifficulty()) return;
+        difficulty = "combo";
+        syncDifficultyChips();
+      });
+      syncDifficultyChips();
+
+      function cancelShuffle() {
+        if (shuffleRaf != null) {
+          cancelAnimationFrame(shuffleRaf);
+          shuffleRaf = null;
+        }
+      }
+
+      function burstSparkles(x, y, count) {
+        const n = reducedMotion ? Math.max(1, Math.ceil(count / 5)) : count;
+        const colors = ["#c4a5ff", "#ff9ecd", "#f0d78c", "#7ee8dc", "#fff"];
+        for (let i = 0; i < n; i++) {
+          const el = document.createElement("span");
+          el.className = "sparkle";
+          el.style.left = x + "px";
+          el.style.top = y + "px";
+          el.style.background = colors[i % colors.length];
+          el.style.boxShadow = `0 0 6px ${colors[i % colors.length]}`;
+          const dx = (Math.random() - 0.5) * 120;
+          const dy = (Math.random() - 0.5) * 120 - 40;
+          el.style.setProperty("--dx", dx + "px");
+          el.style.setProperty("--dy", dy + "px");
+          sparkleLayer.appendChild(el);
+          setTimeout(() => el.remove(), 900);
+        }
+      }
+
+      function setPhaseMsg(text) {
+        phaseMsg.textContent = text;
+      }
+
+      function isFaceUpForIndex(index) {
+        if (phase === "show_faces" || phase === "round_result") return true;
+        if (phase === "waiting_for_pick" && index === pickedIndex) return true;
+        if (
+          phase === "waiting_for_second_pick" &&
+          (index === pickedIndex || index === secondPickedIndex)
+        ) {
+          return true;
+        }
+        return false;
+      }
+
+      function renderQueenRow() {
+        queenCardRow.classList.toggle("phase-shuffling", phase === "shuffling");
+        queenCardRow.innerHTML = "";
+        for (let index = 0; index < 3; index++) {
+          const card = cards[index];
+          const faceUp = isFaceUpForIndex(index);
+          const handleClick =
+            phase === "waiting_for_pick"
+              ? () => handleFirstPick(index)
+              : phase === "waiting_for_second_pick"
+                ? () => handleSecondPick(index)
+                : null;
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "queen-card-btn";
+          btn.dataset.cardId = card.id;
+          if (index === pickedIndex || index === secondPickedIndex) btn.classList.add("picked");
+          btn.disabled = !handleClick;
+          if (handleClick) {
+            btn.addEventListener("click", (ev) => {
+              const r = btn.getBoundingClientRect();
+              burstSparkles(r.left + r.width / 2, r.top + r.height / 2, 14);
+              handleClick();
+            });
+          }
+
+          const inner = document.createElement("span");
+          inner.className = "queen-card-inner";
+          const img = document.createElement("img");
+          img.src = faceUp ? card.faceSrc : CARD_BACK_SRC;
+          img.alt = faceUp ? QUEEN_FACE_ALT[card.id] : "Card back";
+          img.loading = "eager";
+          img.decoding = "sync";
+          inner.appendChild(img);
+          btn.appendChild(inner);
+          btn.setAttribute(
+            "aria-label",
+            faceUp ? QUEEN_FACE_ALT[card.id] : "Face-down card — choose after shuffle when enabled",
+          );
+          queenCardRow.appendChild(btn);
+        }
+      }
+
+      function performOneShuffleFlip() {
+        const row = queenCardRow;
+        const oldEls =
+          row.children.length === 3 ? Array.from(row.children) : [];
+        const beforeMap = new Map();
+        oldEls.forEach((el) => {
+          const id = el.dataset.cardId;
+          if (id) beforeMap.set(id, el.getBoundingClientRect());
+        });
+
+        const copy = [...cards];
+        let i = Math.floor(Math.random() * 3);
+        let j = Math.floor(Math.random() * 3);
+        if (j === i) j = (j + 1) % 3;
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+        cards = copy;
+
+        renderQueenRow();
+
+        if (reducedMotion || beforeMap.size === 0) return;
+
+        Array.from(row.children).forEach((el) => {
+          const id = el.dataset.cardId;
+          const prev = beforeMap.get(id);
+          if (!prev) return;
+          const next = el.getBoundingClientRect();
+          const dx = prev.left - next.left;
+          const dy = prev.top - next.top;
+          if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+          el.style.transition = "none";
+          el.style.transform = "translate(" + dx + "px," + dy + "px)";
+          requestAnimationFrame(() => {
+            el.style.transition =
+              "transform 0.22s cubic-bezier(0.25, 0.85, 0.25, 1)";
+            el.style.transform = "";
+          });
+        });
+      }
+
+      function registerResult(success) {
+        queenStreak = success ? queenStreak + 1 : 0;
+        localStorage.setItem(LS.queenStreak, String(queenStreak));
+        if (success) {
+          queenWins += 1;
+          localStorage.setItem(LS.queenWins, String(queenWins));
+        }
+        queenPlayed += 1;
+        localStorage.setItem(LS.queenPlayed, String(queenPlayed));
+
+        const rec = loadGameRecords();
+        rec.bestStreak = Math.max(rec.bestStreak || 0, queenStreak);
+        if (success) {
+          if (difficulty === "combo") rec.comboWins = (rec.comboWins || 0) + 1;
+          else rec.basicWins = (rec.basicWins || 0) + 1;
+        }
+        saveGameRecords(rec);
+
+        const hist = loadHistory();
+        hist.unshift({
+          success,
+          difficulty: difficulty === "combo" ? "combo" : "basic",
+          t: Date.now(),
+        });
+        saveHistory(hist);
+
+        syncHudLifetime();
+
+        const achCtx = { played: queenPlayed, wins: queenWins, records: rec };
+        const newAch = evaluateAndSaveAchievements(achCtx);
+        newAch.forEach((a, i) => {
+          window.setTimeout(() => showToast("🏆 Unlocked: " + a.title), 400 + i * 550);
+        });
+        renderRecordsUi();
+      }
+
+      function handleFirstPick(index) {
+        if (phase !== "waiting_for_pick") return;
+        pickedIndex = index;
+        const card = cards[index];
+        if (card.id === "QS") {
+          if (difficulty === "basic") {
+            queenMessage = "Well done. You found the Queen of Spades.";
+            phase = "round_result";
+            registerResult(true);
+            renderQueenRow();
+            resultBox.innerHTML = queenMessage;
+            setPhaseMsg("Round complete — deal a new round when ready.");
+          } else {
+            const suit = Math.random() < 0.5 ? "hearts" : "diamonds";
+            targetSuit = suit;
+            queenMessage = `Nice. Now find the Queen of ${suit === "hearts" ? "Hearts" : "Diamonds"} without another shuffle.`;
+            phase = "waiting_for_second_pick";
+            renderQueenRow();
+            resultBox.innerHTML = queenMessage;
+            setPhaseMsg("Second pick — same layout.");
+          }
+        } else {
+          queenMessage = "Missed her. This round is a loss. Try again.";
+          phase = "round_result";
+          registerResult(false);
+          renderQueenRow();
+          resultBox.innerHTML = queenMessage;
+          setPhaseMsg("Round complete — new round when ready.");
+        }
+      }
+
+      function handleSecondPick(index) {
+        if (phase !== "waiting_for_second_pick" || targetSuit == null) return;
+        if (index === pickedIndex) return;
+        secondPickedIndex = index;
+        const card = cards[index];
+        if (card.suit === targetSuit) {
+          queenMessage = "Excellent. You tracked both Queens correctly.";
+          registerResult(true);
+        } else {
+          queenMessage = "Close, but not quite. New round when you are ready.";
+          registerResult(false);
+        }
+        phase = "round_result";
+        renderQueenRow();
+        resultBox.innerHTML = queenMessage;
+        setPhaseMsg("Round complete — deal a new round when ready.");
+      }
+
+      function startNewRound() {
+        cancelShuffle();
+        phase = "intro";
+        pickedIndex = null;
+        secondPickedIndex = null;
+        targetSuit = null;
+        queenMessage = "Watch closely. The cards will flip, then shuffle.";
+        cards = shuffleOrder([...BASE_CARDS]);
+        queenCardRow.classList.remove("phase-shuffling");
+        renderQueenRow();
+        setPhaseMsg(queenMessage);
+        resultBox.innerHTML =
+          "Track the <strong>Queen of Spades</strong> through the shuffle. Suit combo mode adds a second Queen to find.";
+
+        const t1 = reducedMotion ? 0 : 400;
+        const t2 = reducedMotion ? 0 : 1400;
+        const shuffleTotalMs = reducedMotion ? 0 : 2500;
+        const shuffleStepMs = reducedMotion ? 0 : 260;
+
+        window.setTimeout(() => {
+          phase = "show_faces";
+          renderQueenRow();
+          window.setTimeout(() => {
+            phase = "shuffling";
+            renderQueenRow();
+            if (reducedMotion) {
+              cards = shuffleOrder(cards);
+              phase = "waiting_for_pick";
+              queenCardRow.classList.remove("phase-shuffling");
+              shuffleRaf = null;
+              setPhaseMsg("Where is the Queen of Spades?");
+              renderQueenRow();
+              return;
+            }
+            const start = performance.now();
+            let nextSwapAt = start;
+            function tick(now) {
+              if (now - start >= shuffleTotalMs) {
+                phase = "waiting_for_pick";
+                queenCardRow.classList.remove("phase-shuffling");
+                shuffleRaf = null;
+                setPhaseMsg("Where is the Queen of Spades?");
+                renderQueenRow();
+                return;
+              }
+              if (now >= nextSwapAt) {
+                nextSwapAt = now + shuffleStepMs;
+                performOneShuffleFlip();
+              }
+              shuffleRaf = requestAnimationFrame(tick);
+            }
+            shuffleRaf = requestAnimationFrame(tick);
+          }, t2);
+        }, t1);
+      }
+
+      function renderTips() {
+        const t = ESP_TIPS[tipIndex];
+        tipDisplay.innerHTML =
+          '<div class="tip-card"><div class="tip-title">' + t.emoji + " " + t.title + "</div>" + t.text + "</div>";
+      }
+
+      document.getElementById("tipPrev").onclick = () => {
+        tipIndex = (tipIndex - 1 + ESP_TIPS.length) % ESP_TIPS.length;
+        renderTips();
+      };
+      document.getElementById("tipNext").onclick = () => {
+        tipIndex = (tipIndex + 1) % ESP_TIPS.length;
+        renderTips();
+      };
+      document.getElementById("tipRand").onclick = () => {
+        tipIndex = Math.floor(Math.random() * ESP_TIPS.length);
+        renderTips();
+      };
+      renderTips();
+
+      btnDeal.addEventListener("click", () => {
+        sessionRound += 1;
+        roundEl.textContent = String(sessionRound);
+        startNewRound();
+      });
+
+      document.getElementById("btnShortcuts").addEventListener("click", shortcutsHelp);
+
+      document.addEventListener("keydown", (e) => {
+        const t = document.activeElement;
+        if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT")) return;
+        if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+          e.preventDefault();
+          shortcutsHelp();
+        }
+        if (e.key === "n" || e.key === "N") {
+          const sc = document.documentElement.getAttribute("data-app-screen");
+          if (sc === "pro") {
+            e.preventDefault();
+            const p = document.getElementById("btnProRound");
+            if (p) p.click();
+            return;
+          }
+          if (sc !== "game") return;
+          sessionRound += 1;
+          roundEl.textContent = String(sessionRound);
+          startNewRound();
+        }
+        if (e.key === "Escape" && breathRunning) btnBreath.click();
+      });
+
+      function openGrimoireFromHash() {
+        const h = location.hash;
+        if (h.startsWith("#grimoire-") || h === "#page-help") {
+          const el = document.querySelector(h);
+          if (el && el.tagName === "DETAILS") el.open = true;
+        }
+        if (h.startsWith("#pro-") || h === "#pro") {
+          const el = h.length > 1 ? document.querySelector(h) : null;
+          if (el && el.tagName === "DETAILS") el.open = true;
+        }
+      }
+      openGrimoireFromHash();
+      window.addEventListener("hashchange", openGrimoireFromHash);
+
+      roundEl.textContent = String(sessionRound);
+      startNewRound();
+    })();
+  </script>
+  <script>
+    (function () {
+      const CARD_BACK_PRO = "cards/back.png";
+      const PRO_DECK = [
+        { id: "QS", label: "Queen of Spades", faceSrc: "cards/queen_spades.png" },
+        { id: "QH", label: "Queen of Hearts", faceSrc: "cards/queen_hearts.png" },
+        { id: "QD", label: "Queen of Diamonds", faceSrc: "cards/queen_diamonds.png" },
+        { id: "QC", label: "Queen of Clubs", faceSrc: "cards/queen_clubs.png" },
+        { id: "JOK", label: "Joker", faceSrc: "cards/joker.png" },
+      ];
+      const LS_p = { streak: "ascension_pro_streak", wins: "ascension_pro_wins", played: "ascension_pro_played" };
+      const proRow = document.getElementById("proCardRow");
+      const proTargetMsg = document.getElementById("proTargetMsg");
+      const proPhaseMsg = document.getElementById("proPhaseMsg");
+      const proResult = document.getElementById("proResultBox");
+      const proSc = document.getElementById("proScore");
+      const proWinEl = document.getElementById("proWins");
+      const proRnd = document.getElementById("proRound");
+      const btnProRound = document.getElementById("btnProRound");
+      if (!proRow || !btnProRound) return;
+      const rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let pCards = [];
+      let pPhase = "idle";
+      let pTargetOrder = null;
+      let pStep = 0;
+      const pElim = new Set();
+      let pPicked = null;
+      let pProRoundWon = false;
+      let pRaf = null;
+      let pSess = 0;
+      function pLastUnplayedIndex() {
+        for (let j = 0; j < 5; j++) {
+          if (!pElim.has(j)) return j;
+        }
+        return -1;
+      }
+      function buildGmMessage() {
+        if (!pTargetOrder || pStep > 3) return "";
+        const t = pTargetOrder[pStep];
+        const onTable = 5 - pElim.size;
+        const played = pElim.size;
+        return "Click: " + t.label + " (find " + (pStep + 1) + " of 4) — " + onTable + " on the board, " + played + " found and off the play.";
+      }
+      function shuf5(a) {
+        const c = a.slice();
+        for (let i = c.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [c[i], c[j]] = [c[j], c[i]];
+        }
+        return c;
+      }
+      function loadP() {
+        return {
+          streak: parseInt(localStorage.getItem(LS_p.streak) || "0", 10) || 0,
+          wins: parseInt(localStorage.getItem(LS_p.wins) || "0", 10) || 0,
+          played: parseInt(localStorage.getItem(LS_p.played) || "0", 10) || 0,
+        };
+      }
+      let pr = loadP();
+      function saveHud() {
+        proSc.textContent = String(pr.streak);
+        proWinEl.textContent = String(pr.wins);
+        proRnd.textContent = String(pSess);
+      }
+      function cancelP() {
+        if (pRaf != null) {
+          cancelAnimationFrame(pRaf);
+          pRaf = null;
+        }
+      }
+      function pFaceUp(i) {
+        if (pPhase === "show_faces" || pPhase === "round_result") return true;
+        if (pPhase === "waiting_for_pick" && pElim.has(i)) return true;
+        return false;
+      }
+      function pRender() {
+        proRow.classList.toggle("phase-shuffling", pPhase === "shuffling");
+        proRow.innerHTML = "";
+        const lastIdx = pProRoundWon && pPhase === "round_result" ? pLastUnplayedIndex() : -1;
+        for (let i = 0; i < 5; i++) {
+          const c = pCards[i];
+          if (!c) break;
+          const up = pFaceUp(i);
+          const canPick =
+            pPhase === "waiting_for_pick" && pStep < 4 && pTargetOrder && !pElim.has(i);
+          const pick = canPick ? () => pOnPick(i) : null;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "queen-card-btn";
+          btn.dataset.cardId = c.id;
+          if (pPicked === i && pPhase === "round_result" && !pProRoundWon) btn.classList.add("picked");
+          if (pElim.has(i) && pPhase !== "shuffling" && pPhase !== "show_faces")
+            btn.classList.add("pro-eliminated");
+          if (lastIdx === i) btn.classList.add("pro-last-obvious");
+          btn.disabled = !pick;
+          if (pick) btn.addEventListener("click", () => pOnPick(i));
+          const inner = document.createElement("span");
+          inner.className = "queen-card-inner";
+          if (up) {
+            const img = document.createElement("img");
+            img.alt = c.label;
+            img.src = c.faceSrc;
+            img.addEventListener("error", function ph() {
+              this.style.display = "none";
+              const sp = document.createElement("span");
+              sp.className = "pro-card-placeholder";
+              sp.textContent = c.id === "JOK" ? "JOKER" : c.id === "QC" ? "Q\u2663" : c.id;
+              inner.appendChild(sp);
+            });
+            inner.appendChild(img);
+          } else {
+            const img = document.createElement("img");
+            img.src = CARD_BACK_PRO;
+            img.alt = "Card back";
+            inner.appendChild(img);
+          }
+          btn.appendChild(inner);
+          let aria = "Card back";
+          if (up) {
+            if (pElim.has(i) && pPhase === "waiting_for_pick") {
+              aria = c.label + " — found, out of play";
+            } else if (pElim.has(i) && pPhase === "round_result") {
+              aria = c.label + " — was found this round";
+            } else {
+              aria = c.label;
+            }
+          } else {
+            aria = pElim.has(i) ? c.label : "Card back";
+          }
+          btn.setAttribute("aria-label", aria);
+          proRow.appendChild(btn);
+        }
+        saveHud();
+      }
+      function pOnPick(i) {
+        if (pPhase !== "waiting_for_pick" || !pTargetOrder) return;
+        if (pElim.has(i) || pStep > 3) return;
+        const target = pTargetOrder[pStep];
+        const got = pCards[i];
+        const right = got.id === target.id;
+        if (!right) {
+          pPicked = i;
+          pProRoundWon = false;
+          pPhase = "round_result";
+          pr.streak = 0;
+          pr.played += 1;
+          try {
+            localStorage.setItem(LS_p.streak, String(pr.streak));
+            localStorage.setItem(LS_p.played, String(pr.played));
+          } catch (e) {}
+          pRender();
+          proResult.textContent =
+            "This card is " + got.label + ", but the game master asked for " + target.label + " next. No round credit.";
+          proPhaseMsg.textContent = "Round over — new round when ready.";
+          if (window.ascensionRenderRecords) window.ascensionRenderRecords();
+          return;
+        }
+        pPicked = null;
+        pElim.add(i);
+        pStep += 1;
+        if (pStep < 4) {
+          pRender();
+          proResult.textContent =
+            "That was " + got.label + " — out of play. " +
+            (5 - pElim.size) + " cards still in play, " + pElim.size + " found.";
+          proPhaseMsg.textContent = buildGmMessage();
+          return;
+        }
+        pProRoundWon = true;
+        pPhase = "round_result";
+        pr.streak += 1;
+        pr.wins += 1;
+        pr.played += 1;
+        const lastI = pLastUnplayedIndex();
+        const lastC = lastI >= 0 ? pCards[lastI] : got;
+        try {
+          localStorage.setItem(LS_p.streak, String(pr.streak));
+          localStorage.setItem(LS_p.wins, String(pr.wins));
+          localStorage.setItem(LS_p.played, String(pr.played));
+        } catch (e) {}
+        pRender();
+        proResult.textContent =
+          "All four game-master targets found. The only card left is " + lastC.label + " — obvious, so the round is yours.";
+        proPhaseMsg.textContent = "Round over — new round when ready.";
+        if (window.ascensionRenderRecords) window.ascensionRenderRecords();
+      }
+      function pFlip1() {
+        const olds = proRow.children.length === 5 ? Array.from(proRow.children) : [];
+        const m = new Map();
+        olds.forEach((e) => {
+          const id = e.dataset.cardId;
+          if (id) m.set(id, e.getBoundingClientRect());
+        });
+        const copy = pCards.slice();
+        let a = Math.floor(Math.random() * 5);
+        let b = Math.floor(Math.random() * 5);
+        if (b === a) b = (b + 1) % 5;
+        [copy[a], copy[b]] = [copy[b], copy[a]];
+        pCards = copy;
+        pRender();
+        if (rm || m.size === 0) return;
+        Array.from(proRow.children).forEach((e) => {
+          const prr = m.get(e.dataset.cardId);
+          if (!prr) return;
+          const nx = e.getBoundingClientRect();
+          const dx = prr.left - nx.left;
+          const dy = prr.top - nx.top;
+          if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+          e.style.transition = "none";
+          e.style.transform = "translate(" + dx + "px," + dy + "px)";
+          requestAnimationFrame(() => {
+            e.style.transition = "transform 0.22s cubic-bezier(0.25, 0.85, 0.25, 1)";
+            e.style.transform = "";
+          });
+        });
+      }
+      function pStart() {
+        cancelP();
+        pPicked = null;
+        pProRoundWon = false;
+        pElim.clear();
+        pStep = 0;
+        pTargetOrder = shuf5(PRO_DECK.slice());
+        pSess += 1;
+        pCards = shuf5(PRO_DECK.slice());
+        const orderShort = pTargetOrder.map((c) => c.label).join(" → ");
+        proTargetMsg.innerHTML =
+          "This round, the game master will have you find (in this order, one step at a time):<br><em class=\"pro-gm-order\" style=\"font-size:0.9rem;line-height:1.45\">" +
+          orderShort +
+          "</em>";
+        proResult.textContent =
+          "You will make four correct picks. After the shuffle, the game master’s first call is: " + pTargetOrder[0].label + ".";
+        pPhase = "show_faces";
+        pRender();
+        proPhaseMsg.textContent = "Faces up — get the layout, then we cover and shuffle.";
+        const t0 = rm ? 0 : 500;
+        const t1 = rm ? 0 : 1100;
+        const tot = rm ? 0 : 2600;
+        const stp = rm ? 0 : 250;
+        window.setTimeout(() => {
+          pPhase = "shuffling";
+          pRender();
+          proPhaseMsg.textContent = "Shuffling…";
+          if (rm) {
+            pCards = shuf5(pCards);
+            pPhase = "waiting_for_pick";
+            proRow.classList.remove("phase-shuffling");
+            pRaf = null;
+            proPhaseMsg.textContent = buildGmMessage();
+            pRender();
+            return;
+          }
+          const t2 = performance.now();
+          let next = t2;
+          function tickP(now) {
+            if (now - t2 >= tot) {
+              pPhase = "waiting_for_pick";
+              proRow.classList.remove("phase-shuffling");
+              pRaf = null;
+              proPhaseMsg.textContent = buildGmMessage();
+              pRender();
+              return;
+            }
+            if (now >= next) {
+              next = now + stp;
+              pFlip1();
+            }
+            pRaf = requestAnimationFrame(tickP);
+          }
+          pRaf = requestAnimationFrame(tickP);
+        }, t0 + t1);
+      }
+      if (proTargetMsg) {
+        proTargetMsg.textContent = "—";
+        proPhaseMsg.textContent = "Press New round to play.";
+      }
+      btnProRound.addEventListener("click", () => pStart());
+      pr = loadP();
+      saveHud();
+      try {
+        window.ascensionProHudRefresh = function () {
+          pr = loadP();
+          saveHud();
+        };
+      } catch (e) {}
+    })();
+  </script>
+  <script>
+    (function () {
+      var proPal = document.getElementById("proPaletteGroup");
+      if (!proPal) return;
+      var KEY = "ascension_palette";
+      function applyPal(v) {
+        if (!v || v === "default") {
+          try {
+            document.documentElement.removeAttribute("data-palette");
+          } catch (e) {}
+        } else {
+          document.documentElement.setAttribute("data-palette", v);
+        }
+        try {
+          localStorage.setItem(KEY, v || "default");
+        } catch (e) {}
+      }
+      function loadPal() {
+        try {
+          return localStorage.getItem(KEY) || "default";
+        } catch (e) {
+          return "default";
+        }
+      }
+      proPal.querySelectorAll('input[name="ascensionPalette"]').forEach(function (r) {
+        r.addEventListener("change", function () {
+          if (r.checked) applyPal(r.value);
+        });
+      });
+      var m = loadPal();
+      proPal.querySelectorAll('input[name="ascensionPalette"]').forEach(function (r) {
+        r.checked = r.value === m;
+      });
+      if (m && m !== "default") applyPal(m);
+    })();
+  </script>
+  <script>
+    (function () {
+      var KEY = "ascension_pro_mode";
+      var btn = document.getElementById("btnPro");
+      function goTitleIfProHash() {
+        if (document.documentElement.getAttribute("data-pro") === "1") return;
+        var h = (location.hash || "").replace(/^#/, "");
+        if (h === "pro" || (h.length >= 3 && h.indexOf("pro-") === 0)) {
+          try {
+            location.replace((location.pathname || "") + (location.search || "") + "#title");
+          } catch (e) {
+            location.hash = "title";
+          }
+        }
+      }
+      function setProState(on) {
+        document.documentElement.setAttribute("data-pro", on ? "1" : "0");
+        try {
+          localStorage.setItem(KEY, on ? "1" : "0");
+        } catch (e) {}
+        if (btn) {
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+          btn.textContent = on ? "Pro: on" : "Pro: off";
+        }
+        if (!on) goTitleIfProHash();
+      }
+      if (btn) {
+        btn.addEventListener("click", function () {
+          setProState(document.documentElement.getAttribute("data-pro") !== "1");
+        });
+        var onInit = document.documentElement.getAttribute("data-pro") === "1";
+        btn.setAttribute("aria-pressed", onInit);
+        btn.textContent = onInit ? "Pro: on" : "Pro: off";
+      }
+    })();
+  </script>
+  <script>
+    (function () {
+      var btnCopy = document.getElementById("btnProCopyUrl");
+      var btnEx = document.getElementById("btnExportJson");
+      var fileIn = document.getElementById("importAscFile");
+      var btnR = document.getElementById("btnResetPro");
+      var metaCol = document.getElementById("metaThemeColor");
+
+      function applyMetaTheme() {
+        if (!metaCol) return;
+        var t = document.documentElement.getAttribute("data-theme");
+        metaCol.setAttribute("content", t === "light" ? "#ece8f4" : "#0a0612");
+      }
+      applyMetaTheme();
+      if (window.matchMedia) {
+        var mq = window.matchMedia("(prefers-color-scheme: light)");
+        mq.addEventListener("change", function () {
+          if (document.documentElement.getAttribute("data-theme-mode") === "system") applyMetaTheme();
+        });
+      }
+      if (typeof MutationObserver !== "undefined") {
+        new MutationObserver(applyMetaTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      }
+      if (!btnCopy && !btnEx) return;
+      function toast(m) {
+        var el = document.getElementById("toast");
+        if (!el) {
+          return;
+        }
+        el.textContent = m;
+        el.classList.add("show");
+        setTimeout(function () {
+          el.classList.remove("show");
+        }, 2200);
+      }
+      if (btnCopy) {
+        btnCopy.addEventListener("click", function () {
+          var u = (location.origin || "") + location.pathname + location.search + "#pro";
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(u).then(
+              function () {
+                toast("Master level link copied");
+              },
+              function () {
+                window.prompt("Copy this URL:", u);
+              },
+            );
+          } else {
+            window.prompt("Copy this URL:", u);
+          }
+        });
+      }
+      if (btnEx) {
+        btnEx.addEventListener("click", function () {
+          var data = {};
+          try {
+            for (var i = 0; i < localStorage.length; i++) {
+              var k = localStorage.key(i);
+              if (k && k.indexOf("ascension_") === 0) data[k] = localStorage.getItem(k);
+            }
+          } catch (e) {
+            toast("Could not read local storage");
+            return;
+          }
+          var payload = { format: "ascension-backup", version: 1, exported: Date.now(), data: data };
+          var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "ascension-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function () {
+            URL.revokeObjectURL(a.href);
+          }, 2000);
+          toast("Download started");
+        });
+      }
+      if (fileIn) {
+        fileIn.addEventListener("change", function (ev) {
+          var f = ev.target && ev.target.files && ev.target.files[0];
+          if (!f) return;
+          var r = new FileReader();
+          r.onload = function () {
+            try {
+              var o = JSON.parse(r.result);
+              var pack = o.data && typeof o.data === "object" ? o.data : o;
+              if (typeof pack !== "object" || !pack) throw new Error("bad");
+              if (
+                !window.confirm("Replace matching Ascension data from this file? This cannot be undone. Consider exporting a backup of your current data first.")
+              ) {
+                fileIn.value = "";
+                return;
+              }
+              var n = 0;
+              for (var key in pack) {
+                if (!Object.prototype.hasOwnProperty.call(pack, key)) continue;
+                if (key.indexOf("ascension_") !== 0) continue;
+                if (pack[key] == null) {
+                  localStorage.removeItem(key);
+                } else {
+                  localStorage.setItem(key, String(pack[key]));
+                }
+                n += 1;
+              }
+              toast("Imported " + n + " keys");
+              if (window.ascensionRenderRecords) window.ascensionRenderRecords();
+              if (window.ascensionProHudRefresh) window.ascensionProHudRefresh();
+            } catch (e2) {
+              toast("Import failed (invalid file?)");
+            }
+            fileIn.value = "";
+          };
+          r.readAsText(f);
+        });
+      }
+      if (btnR) {
+        btnR.addEventListener("click", function () {
+          if (!window.confirm("Reset only Pro five-card stats (streak, wins, plays) on this device?")) {
+            return;
+          }
+          try {
+            localStorage.removeItem("ascension_pro_streak");
+            localStorage.removeItem("ascension_pro_wins");
+            localStorage.removeItem("ascension_pro_played");
+          } catch (e) {}
+          toast("Pro stats reset");
+          if (window.ascensionProHudRefresh) window.ascensionProHudRefresh();
+          if (window.ascensionRenderRecords) window.ascensionRenderRecords();
+        });
+      }
+    })();
+  </script>
+  <script>
+    (function () {
+      var overlay = document.getElementById("introOverlay");
+      var html = document.documentElement;
+      if (!overlay) return;
+
+      function dismissIntro(instant) {
+        if (html.classList.contains("intro-done")) return;
+        var fast =
+          instant ||
+          (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+        if (fast) {
+          html.classList.add("intro-done");
+          try {
+            sessionStorage.setItem("ascension_intro_seen", "1");
+          } catch (e) {}
+          overlay.setAttribute("aria-hidden", "true");
+          return;
+        }
+        overlay.classList.add("intro-exit");
+        window.setTimeout(function () {
+          html.classList.add("intro-done");
+          try {
+            sessionStorage.setItem("ascension_intro_seen", "1");
+          } catch (e) {}
+          overlay.setAttribute("aria-hidden", "true");
+        }, 720);
+      }
+
+      if (!html.classList.contains("intro-done")) {
+        document.getElementById("introEnter").addEventListener("click", function () {
+          dismissIntro(false);
+        });
+        document.getElementById("introSkip").addEventListener("click", function () {
+          dismissIntro(true);
+        });
+        var introExitX = document.getElementById("introExitX");
+        if (introExitX) {
+          introExitX.addEventListener("click", function () {
+            dismissIntro(true);
+          });
+        }
+        document.addEventListener(
+          "keydown",
+          function introKeys(ev) {
+            if (html.classList.contains("intro-done")) {
+              document.removeEventListener("keydown", introKeys);
+              return;
+            }
+            if (ev.key === "Escape") {
+              ev.preventDefault();
+              dismissIntro(true);
+            }
+          },
+          true,
+        );
+        window.setTimeout(function () {
+          var btn = document.getElementById("introEnter");
+          if (btn && !html.classList.contains("intro-done")) btn.focus();
+        }, 500);
+      }
+
+      var replay = document.getElementById("btnReplayIntro");
+      if (replay) {
+        replay.addEventListener("click", function () {
+          try {
+            sessionStorage.removeItem("ascension_intro_seen");
+          } catch (e) {}
+          location.reload();
+        });
+      }
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = "ascension_theme";
+      var backdrop = document.getElementById("settingsBackdrop");
+      var modal = document.getElementById("settingsModal");
+      var btnOpen = document.getElementById("btnOpenSettings");
+      var btnClose = document.getElementById("btnCloseSettings");
+      var btnQuit = document.getElementById("btnQuitTab");
+      var toastEl = document.getElementById("toast");
+      var themeRadios = document.querySelectorAll('input[name="ascensionThemeMode"]');
+      if (!backdrop || !modal || !btnOpen || !btnClose || !btnQuit || !themeRadios.length) return;
+
+      var systemMql = window.matchMedia("(prefers-color-scheme: light)");
+
+      function getResolvedTheme(mode) {
+        if (mode === "light") return "light";
+        if (mode === "dark") return "dark";
+        return systemMql.matches ? "light" : "dark";
+      }
+
+      function applyTheme(mode) {
+        var resolved = getResolvedTheme(mode);
+        document.documentElement.setAttribute("data-theme", resolved);
+        document.documentElement.setAttribute("data-theme-mode", mode);
+      }
+
+      function persistTheme(mode) {
+        try {
+          localStorage.setItem(STORAGE_KEY, mode);
+        } catch (e) {}
+        applyTheme(mode);
+      }
+
+      function loadStoredMode() {
+        try {
+          var m = localStorage.getItem(STORAGE_KEY) || "dark";
+          if (m === "light" || m === "dark" || m === "system") return m;
+          return "dark";
+        } catch (e) {
+          return "dark";
+        }
+      }
+
+      function syncRadiosFromStorage() {
+        var mode = loadStoredMode();
+        themeRadios.forEach(function (r) {
+          r.checked = r.value === mode;
+        });
+      }
+
+      systemMql.addEventListener("change", function () {
+        var mode = document.documentElement.getAttribute("data-theme-mode");
+        if (mode === "system") applyTheme("system");
+      });
+
+      function introBlocking() {
+        return !document.documentElement.classList.contains("intro-done");
+      }
+
+      function settingsOpen() {
+        return modal.classList.contains("is-open");
+      }
+
+      function openSettings() {
+        syncRadiosFromStorage();
+        try {
+          var pal = localStorage.getItem("ascension_palette") || "default";
+          document.querySelectorAll('input[name="ascensionPalette"]').forEach(function (r) {
+            r.checked = r.value === pal;
+          });
+        } catch (e) {}
+        backdrop.classList.add("is-open");
+        modal.classList.add("is-open");
+        backdrop.setAttribute("aria-hidden", "false");
+        modal.setAttribute("aria-hidden", "false");
+        btnClose.focus();
+      }
+
+      function closeSettings() {
+        backdrop.classList.remove("is-open");
+        modal.classList.remove("is-open");
+        backdrop.setAttribute("aria-hidden", "true");
+        modal.setAttribute("aria-hidden", "true");
+        btnOpen.focus();
+      }
+
+      function toastMsg(msg) {
+        if (!toastEl) return;
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        clearTimeout(toastMsg._t);
+        toastMsg._t = setTimeout(function () {
+          toastEl.classList.remove("show");
+        }, 2600);
+      }
+
+      btnOpen.addEventListener("click", openSettings);
+      btnClose.addEventListener("click", closeSettings);
+      backdrop.addEventListener("click", function (e) {
+        if (e.target === backdrop) closeSettings();
+      });
+
+      themeRadios.forEach(function (r) {
+        r.addEventListener("change", function () {
+          if (r.checked) persistTheme(r.value);
+        });
+      });
+
+      btnQuit.addEventListener("click", function () {
+        window.close();
+        window.setTimeout(function () {
+          toastMsg("Close this tab manually if the browser kept it open.");
+        }, 300);
+      });
+
+      document.addEventListener(
+        "keydown",
+        function (e) {
+          if (e.key !== "Escape") return;
+          if (introBlocking()) return;
+          if (!settingsOpen()) return;
+          e.preventDefault();
+          e.stopPropagation();
+          closeSettings();
+        },
+        true,
+      );
+
+      syncRadiosFromStorage();
+    })();
+  </script>
+</body>
+</html>
