@@ -512,12 +512,65 @@
       background: linear-gradient(145deg, #e8e0f5, #d4c8e8);
     }
 
+    .title-flip-card {
+      width: min(200px, 46vw);
+      margin: 0 auto;
+      perspective: 920px;
+    }
+
+    .title-flip-inner {
+      position: relative;
+      width: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+      aspect-ratio: 2.5 / 3.5;
+    }
+
+    .title-flip-card.is-flipped .title-flip-inner {
+      transform: rotateY(180deg);
+    }
+
+    .title-flip-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 14px;
+      border: 2px solid var(--border-soft);
+      background: linear-gradient(145deg, #2a1f45, #141020);
+      box-shadow: var(--glow);
+      overflow: hidden;
+      line-height: 0;
+    }
+
+    html[data-theme="light"] .title-flip-face {
+      background: linear-gradient(145deg, #e8e0f5, #d4c8e8);
+    }
+
+    .title-flip-back {
+      transform: rotateY(180deg);
+    }
+
+    .title-flip-face img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .title-flip-inner {
+        transition: none;
+      }
+    }
+
     .hub-hero h1 {
       font-family: "Cinzel", serif;
       font-weight: 700;
       font-size: clamp(1.75rem, 4.5vw, 2.5rem);
       letter-spacing: 0.12em;
       margin: 0 0 0.5rem;
+      max-width: 100%;
       background: linear-gradient(135deg, var(--gold), var(--accent), var(--teal));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -1561,6 +1614,80 @@
       color: var(--teal);
     }
 
+    .dungeon-story {
+      margin: 0.55rem 0 0.65rem;
+      padding: 0.6rem 0.95rem;
+      border-radius: 12px;
+      border: 1px solid rgba(126, 232, 220, 0.32);
+      background: linear-gradient(165deg, rgba(8, 18, 22, 0.55), rgba(0, 0, 0, 0.28));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    html[data-theme="light"] .dungeon-story {
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.72), rgba(240, 248, 246, 0.5));
+      border-color: rgba(45, 120, 110, 0.28);
+    }
+
+    .dungeon-story--pro {
+      border-color: rgba(240, 215, 140, 0.38);
+      background: linear-gradient(165deg, rgba(28, 22, 12, 0.5), rgba(0, 0, 0, 0.3));
+    }
+
+    html[data-theme="light"] .dungeon-story--pro {
+      background: linear-gradient(165deg, rgba(255, 250, 235, 0.85), rgba(255, 255, 255, 0.65));
+      border-color: rgba(180, 140, 60, 0.35);
+    }
+
+    .dungeon-story-kicker {
+      display: block;
+      font-family: "Quicksand", sans-serif;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.35rem;
+      text-align: center;
+      opacity: 0.92;
+    }
+
+    .dungeon-story--pro .dungeon-story-kicker {
+      color: var(--gold);
+    }
+
+    .dungeon-story-text {
+      margin: 0;
+      font-family: "Quicksand", sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.58;
+      font-style: italic;
+      font-weight: 500;
+      color: var(--text);
+      text-align: center;
+      white-space: pre-line;
+    }
+
+    .dungeon-story-text.dungeon-story-crawl {
+      animation: dungeonStoryCrawl 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes dungeonStoryCrawl {
+      from {
+        opacity: 0;
+        transform: perspective(420px) rotateX(6deg) translateY(12px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: perspective(420px) rotateX(0deg) translateY(0) scale(1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dungeon-story-text.dungeon-story-crawl {
+        animation: none;
+      }
+    }
+
     .queen-card-row {
       display: flex;
       flex-wrap: wrap;
@@ -2244,8 +2371,37 @@
       animation: introFadeLine 0.9s ease 0.4s forwards;
     }
 
+    .intro-card-art {
+      margin: 0 auto 1.15rem;
+      max-width: min(168px, 42vw);
+      opacity: 0;
+      animation: introFadeLine 0.9s ease 0.5s forwards;
+    }
+
+    .intro-card-art img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 2.5 / 3.5;
+      object-fit: contain;
+      border-radius: 14px;
+      border: 2px solid var(--border-soft);
+      background: linear-gradient(145deg, #2a1f45, #141020);
+      box-shadow: var(--glow);
+      line-height: 0;
+    }
+
+    html[data-theme="light"] .intro-card-art img {
+      background: linear-gradient(145deg, #e8e0f5, #d4c8e8);
+    }
+
     @keyframes introFadeLine {
       to { opacity: 0.9; }
+    }
+
+    .ascension-headline {
+      white-space: nowrap;
+      display: inline-block;
     }
 
     .intro-title {
@@ -2412,6 +2568,7 @@
       }
 
       .intro-eyebrow,
+      .intro-card-art,
       .intro-sub,
       .intro-enter,
       .intro-skip,
@@ -2442,7 +2599,10 @@
     <div class="intro-particles" aria-hidden="true"></div>
     <div class="intro-inner">
       <p class="intro-eyebrow">Oracle · Grimoire · First impression</p>
-      <h1 id="introTitle" class="intro-title">✦ ASCENSION ✦</h1>
+      <div class="intro-card-art" aria-hidden="true">
+        <img src="cards/back.png" width="168" height="235" alt="" decoding="async" />
+      </div>
+      <h1 id="introTitle" class="intro-title"><span class="ascension-headline">✦ ASCENSION ✦</span></h1>
       <p id="introDesc" class="intro-sub">
         Three veils wait. Still the noise, feel the pull, then choose the path you ascend with.
       </p>
@@ -2500,6 +2660,20 @@
         <label><input type="radio" name="ascensionPalette" value="moss" /> Moss</label>
         <label><input type="radio" name="ascensionPalette" value="violet" /> Violet haze</label>
       </div>
+      <h3>Audio</h3>
+      <p class="settings-note" style="margin: 0 0 0.5rem; font-size: 0.84rem; color: var(--muted)">
+        Many browsers block audio until you interact with the page. With <strong>Pro: on</strong>, bonus tracks from <code>audio/bonus tracks/</code> are included in the shuffle for rounds and the grimoire.
+      </p>
+      <div class="theme-options" style="flex-direction: column; align-items: flex-start; gap: 0.4rem; margin-bottom: 0.35rem">
+        <label>
+          <input type="checkbox" id="ascensionMusicOn" checked />
+          Background music (title, grimoire, active rounds)
+        </label>
+        <label>
+          <input type="checkbox" id="ascensionSfxOn" checked />
+          Sound effects (correct / incorrect picks)
+        </label>
+      </div>
       <h3>Window</h3>
       <div class="settings-actions">
         <button type="button" class="btn-quit-tab" id="btnQuitTab">Close tab / exit</button>
@@ -2514,16 +2688,18 @@
     <section id="title" class="app-screen" aria-label="Title menu">
       <div class="hub-hero">
         <div class="hub-hero-art" aria-hidden="true">
-          <img
-            class="hub-title-card-back"
-            src="cards/back.png"
-            width="200"
-            height="280"
-            alt=""
-            decoding="async"
-          />
+          <div class="title-flip-card" id="titleFlipCard">
+            <div class="title-flip-inner">
+              <div class="title-flip-face title-flip-front">
+                <img src="cards/queen_spades.png" width="200" height="280" alt="" decoding="async" />
+              </div>
+              <div class="title-flip-face title-flip-back">
+                <img src="cards/back.png" width="200" height="280" alt="" decoding="async" />
+              </div>
+            </div>
+          </div>
         </div>
-        <h1>✦ ASCENSION ✦</h1>
+        <h1><span class="ascension-headline">✦ ASCENSION ✦</span></h1>
         <p class="hub-tagline">Easy ESP Training Card Game</p>
       </div>
       <nav class="hub-nav" aria-label="Main menu">
@@ -3004,6 +3180,10 @@
       <section class="board" aria-label="Queen of Spades trainer">
         <h2>🃏 THE SPREAD — Queen tracker</h2>
         <p class="phase-msg" id="phaseMsg">Watch the Queens; the cards will flip, shuffle, then you find the Queen of Spades.</p>
+        <aside class="dungeon-story" id="queenDungeonStory" aria-live="polite">
+          <span class="dungeon-story-kicker">Delve log</span>
+          <p class="dungeon-story-text" id="queenStoryText">—</p>
+        </aside>
         <div class="queen-toolbar">
           <div class="queen-difficulty">
             <span class="queen-label">Difficulty</span>
@@ -3099,11 +3279,15 @@
           <div class="hud-pill">✅ <strong>Wins</strong> <span id="proWins">0</span></div>
           <div class="hud-pill">🃏 <strong>Round</strong> <span id="proRound">0</span></div>
         </div>
+        <aside class="dungeon-story dungeon-story--pro" id="proDungeonStory" aria-live="polite">
+          <span class="dungeon-story-kicker">Lower floor</span>
+          <p class="dungeon-story-text" id="proStoryText">Press <strong>New round</strong> — each descent opens a new room.</p>
+        </aside>
         <div class="queen-card-row five" id="proCardRow" role="group" aria-label="Five cards"></div>
         <div class="controls">
           <button type="button" class="btn" id="btnProRound">🔀 New round</button>
         </div>
-        <div class="result-box" id="proResultBox" role="status" aria-live="polite">Five unique cards (three Queens, Queen of Clubs, and a Joker). The game master names a <strong>sequence</strong> of all five: you have four steps to <strong>find the next card</strong> on the board. Correct picks are marked off; after four, one card is left and the win is clear. Placeholder art appears if <code>cards/queen_clubs.png</code> or <code>cards/joker.png</code> is missing. <kbd>N</kbd> starts a new round (when not typing in a field).</div>
+        <div class="result-box" id="proResultBox" role="status" aria-live="polite">Five unique cards (three Queens, Queen of Clubs, and a Joker). The game master names a <strong>sequence</strong> of all five: you have four steps to <strong>find the next card</strong> on the board. Correct picks are marked off; after four, one card is left and the win is clear. Face art uses <code>cards/queen of clubs.PNG</code>; each new round picks <code>cards/joker.PNG</code> or <code>cards/jokers.PNG</code> at random for the Joker. Placeholder text appears if an image fails to load. <kbd>N</kbd> starts a new round (when not typing in a field).</div>
       </div>
 
       <div id="pro-utils" class="pro-utils" aria-label="Data, backup, and shortcuts">
@@ -3152,6 +3336,38 @@
         { title: "Regression to the mean", emoji: "📉", text: "Streaks of \"hits\" and \"misses\" both happen by chance. Log enough trials and you'll see variance — that's why honest journaling beats remembering only wins." },
         { title: "Light & sleep", emoji: "🌤️", text: "Dim screens an hour before subtle work when you can. Melatonin and overstimulation affect how \"thin\" your mental static feels in the morning." },
       ];
+
+      const DUNGEON_STORIES = [
+        "Bracken scratches your forearms as you step into the clearing. Mist coils around three hooded figures, each standing perfectly still. When they speak, three voices claim the same crown—yours. The air smells of wet leaves and something sweetly rotten, like fruit that blackened on the branch last autumn.\n\nYou feel the glamour press against your temples—a soft, insistent wrongness that makes the trees lean in to listen. One figure shifts her weight onto her left hip; that was the Queen's habit before the mist took her. Watch the fog slide sideways now. That face you tracked before the world shuffled? That is your ally. The others only borrowed their smiles, and those smiles are starting to crack.",
+        "The corridor vaults above you, cold stone sucking warmth from your bones. Three doors: gilt, iron, bone. You blink—the seneschal's cantrip whispers through the hinges, rearranging certainty like a dealer cutting a deck you cannot see. Somewhere behind one waits the sovereign.\n\nA single torch gutters in its sconce. You realize the shadows beneath each door are identical: pooled darkness, no clue. But the air tells a different story. The iron door breathes cold. The bone door sighs dust. The gilt door—there—her shadow fell across that threshold not three heartbeats ago. The wood still remembers the weight of her palm. Choose before you blink again.",
+        "Torchlight shivers along the arcade. Wax courtiers in duplicate gowns turn their painted faces toward you, each lifting a scepter. Their lips move in unison, reciting a loyalty oath that loops like a broken music box. Wax drips from their fingers, pooling into identical puddles.\n\nYou step closer. The heat from the torches makes the figures waver, but one detail holds steady: a breath out of rhythm. Not the synchronized sigh the others exhale, but a half-beat hesitation—someone real drawing air instead of reciting. The gallery inhales as one. Find her before they all exhale and swap faces again. Your heart is counting the wrong rhythm already.",
+        "The back room's hush tastes like smoke and old secrets. Three Queens fan across the table, identical backs to the ceiling—spades, hearts, the suit worn off the third. The cardsharp grins, ribbons the deck through fingers that move too smoothly, too deliberately, like a spider re-weaving its web.\n\nAle fumes rise from a forgotten tankard. The other players lean in, watching the cards, but you watch mouths. One sovereign breathes your name—not a boast, barely a whisper under her breath, meant only for you. The cardsharp's weave accelerates, faces vanishing into a blur. Follow that thread of sound through the shuffle. The loudest boasts are always borrowed, but a secret spoken at a whisper? That one belongs to someone real.",
+        "Sunken stone sweats around you. Three sarcophagi hum, each in a different key—a low, throaty vibration you feel in your sternum, like three distant cellos playing three different elegies. Carved Queens stare in profile, their stone eyes following you whether you move left or right.\n\nOne slab still weeps mortar-dust from its seal. You touch the grit—it smears warm between your fingers, not cold like the rest of the crypt. Beneath that warmth, something breathes slowly, patiently. The other two lids show no dust, no breath, no recent prayer. Choose carefully. The ones meant to stay closed have not wept for anyone in a century.",
+        "The tent flaps close behind you, cutting off the market's noise—the haggling, the bells, the live chickens. Three veiled thrones, three merchants who trade silks while you haggle for truth. Copper lamps swing overhead, casting overlapping circles of light that never seem to touch the same face twice.\n\nWatch the veils. Lamplight catches each differently—one gleams gold, one drinks the flame, one … refracts. A prismatic split that bends the light wrong, like heat haze over a false well. That is the Queen's veil. The others are silk; hers is starlight pretending to be cloth. Name her cushion before someone strikes the tent poles and the whole court scatters into the crowd, indistinguishable, laughing with your coin.",
+        "Salt spray stings your lips. Clouds pass overhead and three painted figureheads lean inward, just slightly—wood groaning like they're listening to a conversation you cannot hear. The aft deck rolls beneath you. The old boatswain spits over the rail and mutters, The Queen of Spades never left the rail.\n\nYou run your palm along the carvings. One feels different: not salt-bleached and cracked, but oiled, warm, as if a hand touched it every dawn. The tide turns beneath your feet, the deck shifting, and for a moment all three figureheads seem to blink. Which carving still owns the ship's luck? You will know when you choose wrong—the water will rise faster than any prayer.",
+        "Dust motes float through exhausted air. Three illuminated portraits blink the moment you look away—you caught the movement in your periphery, the flutter of painted eyelids. The archivist's whisper follows you between shelves that seem to breathe: One corridor is a lie drawn over another.\n\nYou kneel. The floor tiles show footprints—yours and others. Two Queens leave tracks that skid, slide, change depth. But one leaves prints with the same pressure each step: heel, ball, toe, even. Trace that Queen through the maze. When the shelves slide shut behind you, her footprints will not double. Everyone else's will.",
+        "Every reflection wears a steel crown. Glass panels skid sideways on oiled tracks—you hear them whisper past each other, grinding finer than sand. Queens multiply, split, bounce off tilted mirrors until you cannot trust your own face, your own hands, your own breath fogging the silver.\n\nLook at the floor. Not the walls, not the infinite regress of identical smiles. The floor. One figure among the dozens casts a single shadow—sharp, unduplicated, falling at a true angle. The rest are echoes trying to borrow a silhouette. That one shadow belongs to the original. Walk toward it. Do not meet her eyes until you feel the cold glass against your back and know you have stopped moving.",
+        "The wizard raises both hands. Aurora-glamour drapes three claimants in the same impossible light—robes that shift from violet to green to gold, crowns that seem to float a finger's width above their heads. The court holds its breath. You hold yours.\n\nThen the spell flickers. One heartbeat where the magic stutters, the torches sputtering in sympathy. Watch the diadems. Two lift too slow, too light, bobbing like corks on a ripple. Only one crown sinks—just for that heartbeat—pressing down like iron against a brow, like a headache that knows it belongs. Trust that lag when you commit. The glamour will return; the weight will not lie.",
+        "Mist hugs the fork in three directions. Three hooded guides point down each path, their voices overlapping in a soft, maddening chorus: She went this way. She went this way. She went this way. The mud sucks at your boots.\n\nKneel. Press your palm flat to the earth. The ground remembers her tread—not the guides, not the mist, but the cold mud itself. Watch how the surface re-stitches after the world pretends to reset, a slow healing like skin closing over a cut. One seam still holds warmth. You can feel it pulse once, faint as a hidden spring. Follow that seam. The other two paths will freeze your fingers before you reach their ends.",
+        "Gears cry somewhere above you—a sound like old metal weeping. Three pendulums swing deliberately out of phase: clack, pause, clack, pause, never meeting, never agreeing. The drum of brass fills your skull, each tick landing in a different part of your chest.\n\nPress your ear to the cold iron wall. Somewhere in the noise, the Queen of Spades marks the honest beat—one stroke per measure that does not echo back, a dry click like a knuckle cracking. The other two pendulums cheat. Wait for the moment when the false swings cancel each other. Then catch her hand on that single, unreturned stroke. The stairs will stop looping. The gears will weep for someone else.",
+        "Heat shimmers the horizon into water that isn't there. Three palm-thin shadows stretch across the sand, each hosting a miniature court—tiny figures no taller than your thumb, tiny thrones made of salt and glass. The mirage swaps their order like a cardsharp's shuffle, faster each time you blink.\n\nSweat drips from your chin and vanishes before it hits the ground. Step closer to the nearest shadow. The air changes—not cooler yet, but different, denser, as if the heat has to work harder to stay here. One shadow leaves a ring of cooler air against your skin, a pocket where your breath steams faintly. Kneel where the temperature tells the truth. The chorus will cheer for anyone. The cold will not lie.",
+      ];
+      let dungeonStoryI = 0;
+      const queenStoryTextEl = document.getElementById("queenStoryText");
+      const rmStories = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function advanceDungeonStory(el) {
+        if (!el) return;
+        const t = DUNGEON_STORIES[dungeonStoryI];
+        dungeonStoryI = (dungeonStoryI + 1) % DUNGEON_STORIES.length;
+        el.textContent = t;
+        if (rmStories) return;
+        el.classList.remove("dungeon-story-crawl");
+        void el.offsetWidth;
+        el.classList.add("dungeon-story-crawl");
+      }
+      try {
+        window.ascensionAdvanceDungeonStory = advanceDungeonStory;
+      } catch (e) {}
 
       const LS = {
         queenStreak: "ascension_v1_queen_streak",
@@ -3548,6 +3764,9 @@
       let sessionRound = 1;
       /** @type {"intro"|"show_faces"|"covered"|"shuffling"|"waiting_for_pick"|"waiting_for_second_pick"|"round_result"} */
       let phase = "intro";
+      window.ascensionQueenInActiveRound = function () {
+        return phase !== "round_result";
+      };
       /** @type {typeof BASE_CARDS} */
       let cards = [];
       /** @type {"basic"|"combo"} */
@@ -3756,13 +3975,16 @@
         const card = cards[index];
         if (card.id === "QS") {
           if (difficulty === "basic") {
+            if (window.ascensionAudio) window.ascensionAudio.playCorrect();
             queenMessage = "Well done. You found the Queen of Spades.";
             phase = "round_result";
             registerResult(true);
             renderQueenRow();
             resultBox.innerHTML = queenMessage;
             setPhaseMsg("Round complete — deal a new round when ready.");
+            if (window.ascensionAudio) window.ascensionAudio.endRoundMusic();
           } else {
+            if (window.ascensionAudio) window.ascensionAudio.playCorrect();
             const suit = Math.random() < 0.5 ? "hearts" : "diamonds";
             targetSuit = suit;
             queenMessage = `Nice. Now find the Queen of ${suit === "hearts" ? "Hearts" : "Diamonds"} without another shuffle.`;
@@ -3772,12 +3994,14 @@
             setPhaseMsg("Second pick — same layout.");
           }
         } else {
+          if (window.ascensionAudio) window.ascensionAudio.playIncorrect();
           queenMessage = "Missed her. This round is a loss. Try again.";
           phase = "round_result";
           registerResult(false);
           renderQueenRow();
           resultBox.innerHTML = queenMessage;
           setPhaseMsg("Round complete — new round when ready.");
+          if (window.ascensionAudio) window.ascensionAudio.endRoundMusic();
         }
       }
 
@@ -3787,9 +4011,11 @@
         secondPickedIndex = index;
         const card = cards[index];
         if (card.suit === targetSuit) {
+          if (window.ascensionAudio) window.ascensionAudio.playCorrect();
           queenMessage = "Excellent. You tracked both Queens correctly.";
           registerResult(true);
         } else {
+          if (window.ascensionAudio) window.ascensionAudio.playIncorrect();
           queenMessage = "Close, but not quite. New round when you are ready.";
           registerResult(false);
         }
@@ -3797,10 +4023,18 @@
         renderQueenRow();
         resultBox.innerHTML = queenMessage;
         setPhaseMsg("Round complete — deal a new round when ready.");
+        if (window.ascensionAudio) window.ascensionAudio.endRoundMusic();
       }
 
       function startNewRound() {
         cancelShuffle();
+        advanceDungeonStory(queenStoryTextEl);
+        if (
+          document.documentElement.getAttribute("data-app-screen") === "game" &&
+          window.ascensionAudio
+        ) {
+          window.ascensionAudio.startRoundMusic();
+        }
         phase = "intro";
         pickedIndex = null;
         secondPickedIndex = null;
@@ -3927,13 +4161,20 @@
   <script>
     (function () {
       const CARD_BACK_PRO = "cards/back.png";
-      const PRO_DECK = [
+      const PRO_JOKER_FACES = ["cards/joker.PNG", "cards/jokers.PNG"];
+      const PRO_DECK_BASE = [
         { id: "QS", label: "Queen of Spades", faceSrc: "cards/queen_spades.png" },
         { id: "QH", label: "Queen of Hearts", faceSrc: "cards/queen_hearts.png" },
         { id: "QD", label: "Queen of Diamonds", faceSrc: "cards/queen_diamonds.png" },
-        { id: "QC", label: "Queen of Clubs", faceSrc: "cards/queen_clubs.png" },
-        { id: "JOK", label: "Joker", faceSrc: "cards/joker.png" },
+        { id: "QC", label: "Queen of Clubs", faceSrc: "cards/queen%20of%20clubs.PNG" },
+        { id: "JOK", label: "Joker" },
       ];
+      function proDeckSnapshot() {
+        const jokerSrc = PRO_JOKER_FACES[Math.floor(Math.random() * PRO_JOKER_FACES.length)];
+        return PRO_DECK_BASE.map(function (c) {
+          return c.id === "JOK" ? { id: c.id, label: c.label, faceSrc: jokerSrc } : c;
+        });
+      }
       const LS_p = { streak: "ascension_pro_streak", wins: "ascension_pro_wins", played: "ascension_pro_played" };
       const proRow = document.getElementById("proCardRow");
       const proTargetMsg = document.getElementById("proTargetMsg");
@@ -3943,10 +4184,14 @@
       const proWinEl = document.getElementById("proWins");
       const proRnd = document.getElementById("proRound");
       const btnProRound = document.getElementById("btnProRound");
+      const proStoryTextEl = document.getElementById("proStoryText");
       if (!proRow || !btnProRound) return;
       const rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       let pCards = [];
       let pPhase = "idle";
+      window.ascensionProInActiveRound = function () {
+        return pPhase !== "idle" && pPhase !== "round_result";
+      };
       let pTargetOrder = null;
       let pStep = 0;
       const pElim = new Set();
@@ -4065,6 +4310,7 @@
         const got = pCards[i];
         const right = got.id === target.id;
         if (!right) {
+          if (window.ascensionAudio) window.ascensionAudio.playIncorrect();
           pPicked = i;
           pProRoundWon = false;
           pPhase = "round_result";
@@ -4078,6 +4324,7 @@
           proResult.textContent =
             "This card is " + got.label + ", but the game master asked for " + target.label + " next. No round credit.";
           proPhaseMsg.textContent = "Round over — new round when ready.";
+          if (window.ascensionAudio) window.ascensionAudio.endRoundMusic();
           if (window.ascensionRenderRecords) window.ascensionRenderRecords();
           return;
         }
@@ -4085,6 +4332,7 @@
         pElim.add(i);
         pStep += 1;
         if (pStep < 4) {
+          if (window.ascensionAudio) window.ascensionAudio.playCorrect();
           pRender();
           proResult.textContent =
             "That was " + got.label + " — out of play. " +
@@ -4092,6 +4340,7 @@
           proPhaseMsg.textContent = buildGmMessage();
           return;
         }
+        if (window.ascensionAudio) window.ascensionAudio.playCorrect();
         pProRoundWon = true;
         pPhase = "round_result";
         pr.streak += 1;
@@ -4108,6 +4357,7 @@
         proResult.textContent =
           "All four game-master targets found. The only card left is " + lastC.label + " — obvious, so the round is yours.";
         proPhaseMsg.textContent = "Round over — new round when ready.";
+        if (window.ascensionAudio) window.ascensionAudio.endRoundMusic();
         if (window.ascensionRenderRecords) window.ascensionRenderRecords();
       }
       function pFlip1() {
@@ -4142,13 +4392,16 @@
       }
       function pStart() {
         cancelP();
+        if (window.ascensionAdvanceDungeonStory) window.ascensionAdvanceDungeonStory(proStoryTextEl);
+        if (window.ascensionAudio) window.ascensionAudio.startRoundMusic();
         pPicked = null;
         pProRoundWon = false;
         pElim.clear();
         pStep = 0;
-        pTargetOrder = shuf5(PRO_DECK.slice());
+        const pDeck = proDeckSnapshot();
+        pTargetOrder = shuf5(pDeck.slice());
         pSess += 1;
-        pCards = shuf5(PRO_DECK.slice());
+        pCards = shuf5(pDeck.slice());
         const orderShort = pTargetOrder.map((c) => c.label).join(" → ");
         proTargetMsg.innerHTML =
           "This round, the game master will have you find (in this order, one step at a time):<br><em class=\"pro-gm-order\" style=\"font-size:0.9rem;line-height:1.45\">" +
@@ -4281,6 +4534,231 @@
         btn.setAttribute("aria-pressed", onInit);
         btn.textContent = onInit ? "Pro: on" : "Pro: off";
       }
+    })();
+  </script>
+  <script>
+    (function () {
+      var LS_MUSIC = "ascension_music_enabled";
+      var LS_SFX = "ascension_sfx_enabled";
+      var TRACKS = [
+        "audio/tracks/liecio-mystical-place-relax-ambient-258070.mp3",
+        "audio/tracks/mfcc-ethereal-space-landscape-music-338514.mp3",
+        "audio/tracks/saavane-etheral-beat-201860.mp3",
+      ];
+      var BONUS = [
+        "audio/bonus%20tracks/backgroundmusicforvideos-ethereal-landscape-space-music-301238.mp3",
+        "audio/bonus%20tracks/mfcc-space-ethereal-landscape-music-335682.mp3",
+        "audio/bonus%20tracks/mfcc-space-landscape-ethereal-music-345394.mp3",
+      ];
+      var TITLE = ["audio/title/leberch-ethereal-511852.mp3"];
+      var CORRECT = [
+        "audio/correct/cartoon-music-soundtrack-correct-answer-bells-499484.mp3",
+        "audio/correct/dragon-studio-correct-472358.mp3",
+        "audio/correct/dragon-studio-game-show-correct-tick-sound-416167.mp3",
+        "audio/correct/tuomas_data-the-correct-answer-33-183620.mp3",
+      ];
+      var INCORRECT = ["audio/incorrect/universfield-system-notification-04-206493.mp3"];
+
+      function pick(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function isPro() {
+        return document.documentElement.getAttribute("data-pro") === "1";
+      }
+
+      function musicEnabled() {
+        try {
+          return localStorage.getItem(LS_MUSIC) !== "0";
+        } catch (e) {
+          return true;
+        }
+      }
+
+      function sfxEnabled() {
+        try {
+          return localStorage.getItem(LS_SFX) !== "0";
+        } catch (e) {
+          return true;
+        }
+      }
+
+      var bgm = new Audio();
+      bgm.preload = "auto";
+      var roundBgmActive = false;
+
+      function stopBgmHard() {
+        bgm.pause();
+        try {
+          bgm.removeAttribute("src");
+          bgm.load();
+        } catch (e) {}
+      }
+
+      function playBgmUrl(url, loop) {
+        stopBgmHard();
+        bgm.loop = !!loop;
+        bgm.volume = 0.78;
+        try {
+          bgm.src = new URL(url, window.location.href).href;
+        } catch (e) {
+          bgm.src = url;
+        }
+        function tryPlay() {
+          var pl = bgm.play();
+          if (pl && pl.catch) pl.catch(function () {});
+        }
+        tryPlay();
+        var onReady = function () {
+          bgm.removeEventListener("canplay", onReady);
+          tryPlay();
+        };
+        bgm.addEventListener("canplay", onReady);
+      }
+
+      function musicPool() {
+        var p = TRACKS.slice();
+        if (isPro()) {
+          for (var i = 0; i < BONUS.length; i++) p.push(BONUS[i]);
+        }
+        return p;
+      }
+
+      function startRoundMusic() {
+        if (!musicEnabled()) return;
+        roundBgmActive = true;
+        playBgmUrl(pick(musicPool()), true);
+      }
+
+      function endRoundMusic() {
+        if (!roundBgmActive) return;
+        roundBgmActive = false;
+        playAmbientForScreen();
+      }
+
+      function playAmbientForScreen() {
+        if (!musicEnabled()) {
+          stopBgmHard();
+          return;
+        }
+        var s = document.documentElement.getAttribute("data-app-screen") || "title";
+        if (s === "title") {
+          playBgmUrl(pick(TITLE), true);
+          return;
+        }
+        if (s === "grimoire") {
+          playBgmUrl(pick(musicPool()), true);
+          return;
+        }
+        stopBgmHard();
+      }
+
+      function syncNavigation() {
+        var s = document.documentElement.getAttribute("data-app-screen") || "title";
+        if (s === "game") {
+          if (window.ascensionQueenInActiveRound && window.ascensionQueenInActiveRound()) {
+            if (!roundBgmActive) startRoundMusic();
+          } else {
+            roundBgmActive = false;
+            playAmbientForScreen();
+          }
+          return;
+        }
+        if (s === "pro") {
+          if (window.ascensionProInActiveRound && window.ascensionProInActiveRound()) {
+            if (!roundBgmActive) startRoundMusic();
+          } else {
+            roundBgmActive = false;
+            playAmbientForScreen();
+          }
+          return;
+        }
+        roundBgmActive = false;
+        playAmbientForScreen();
+      }
+
+      function playSfx(url) {
+        if (!sfxEnabled()) return;
+        try {
+          var a = new Audio(url);
+          a.volume = 0.62;
+          var p = a.play();
+          if (p && p.catch) p.catch(function () {});
+        } catch (e) {}
+      }
+
+      function playCorrect() {
+        playSfx(pick(CORRECT));
+      }
+
+      function playIncorrect() {
+        playSfx(pick(INCORRECT));
+      }
+
+      function syncFromStorage() {
+        if (!musicEnabled()) {
+          roundBgmActive = false;
+          stopBgmHard();
+          return;
+        }
+        syncNavigation();
+      }
+
+      /**
+       * Browsers block autoplay until a user gesture. Call this synchronously from
+       * click / pointerdown / keydown handlers so bgm.play() runs inside the gesture stack.
+       */
+      function primeFromUserGesture() {
+        if (!musicEnabled()) return;
+        syncNavigation();
+        try {
+          var p2 = bgm.play();
+          if (p2 && p2.catch) p2.catch(function () {});
+        } catch (e) {}
+      }
+
+      window.ascensionAudio = {
+        startRoundMusic: startRoundMusic,
+        endRoundMusic: endRoundMusic,
+        syncNavigation: syncNavigation,
+        playCorrect: playCorrect,
+        playIncorrect: playIncorrect,
+        syncFromStorage: syncFromStorage,
+        primeFromUserGesture: primeFromUserGesture,
+      };
+
+      window.addEventListener("hashchange", function () {
+        window.setTimeout(syncNavigation, 0);
+      });
+      window.setTimeout(syncNavigation, 0);
+
+      if (document.documentElement.classList.contains("intro-done")) {
+        window.addEventListener(
+          "pointerdown",
+          function ascensionAudioFirstGesture() {
+            primeFromUserGesture();
+          },
+          { once: true, passive: true },
+        );
+      }
+
+      if (typeof MutationObserver !== "undefined") {
+        new MutationObserver(function () {
+          syncNavigation();
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-pro"] });
+      }
+
+      var titleFlip = document.getElementById("titleFlipCard");
+      var flipRm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function scheduleTitleFlip() {
+        if (!titleFlip || flipRm) return;
+        var ms = 2400 + Math.random() * 5600;
+        window.setTimeout(function () {
+          titleFlip.classList.toggle("is-flipped");
+          scheduleTitleFlip();
+        }, ms);
+      }
+      scheduleTitleFlip();
     })();
   </script>
   <script>
@@ -4424,6 +4902,9 @@
 
       function dismissIntro(instant) {
         if (html.classList.contains("intro-done")) return;
+        if (window.ascensionAudio && window.ascensionAudio.primeFromUserGesture) {
+          window.ascensionAudio.primeFromUserGesture();
+        }
         var fast =
           instant ||
           (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -4468,6 +4949,22 @@
             if (ev.key === "Escape") {
               ev.preventDefault();
               dismissIntro(true);
+              return;
+            }
+            if (ev.key === "Enter") {
+              var tg = ev.target;
+              if (
+                tg &&
+                (tg.tagName === "TEXTAREA" ||
+                  (tg.tagName === "INPUT" &&
+                    tg.type !== "button" &&
+                    tg.type !== "submit" &&
+                    tg.type !== "reset"))
+              ) {
+                return;
+              }
+              ev.preventDefault();
+              dismissIntro(false);
             }
           },
           true,
@@ -4499,6 +4996,8 @@
       var btnQuit = document.getElementById("btnQuitTab");
       var toastEl = document.getElementById("toast");
       var themeRadios = document.querySelectorAll('input[name="ascensionThemeMode"]');
+      var musicCb = document.getElementById("ascensionMusicOn");
+      var sfxCb = document.getElementById("ascensionSfxOn");
       if (!backdrop || !modal || !btnOpen || !btnClose || !btnQuit || !themeRadios.length) return;
 
       var systemMql = window.matchMedia("(prefers-color-scheme: light)");
@@ -4560,6 +5059,10 @@
             r.checked = r.value === pal;
           });
         } catch (e) {}
+        try {
+          if (musicCb) musicCb.checked = localStorage.getItem("ascension_music_enabled") !== "0";
+          if (sfxCb) sfxCb.checked = localStorage.getItem("ascension_sfx_enabled") !== "0";
+        } catch (e2) {}
         backdrop.classList.add("is-open");
         modal.classList.add("is-open");
         backdrop.setAttribute("aria-hidden", "false");
@@ -4596,6 +5099,28 @@
           if (r.checked) persistTheme(r.value);
         });
       });
+
+      if (musicCb) {
+        musicCb.addEventListener("change", function () {
+          try {
+            localStorage.setItem("ascension_music_enabled", musicCb.checked ? "1" : "0");
+          } catch (e) {}
+          if (window.ascensionAudio) {
+            if (musicCb.checked && window.ascensionAudio.primeFromUserGesture) {
+              window.ascensionAudio.primeFromUserGesture();
+            } else {
+              window.ascensionAudio.syncFromStorage();
+            }
+          }
+        });
+      }
+      if (sfxCb) {
+        sfxCb.addEventListener("change", function () {
+          try {
+            localStorage.setItem("ascension_sfx_enabled", sfxCb.checked ? "1" : "0");
+          } catch (e) {}
+        });
+      }
 
       btnQuit.addEventListener("click", function () {
         window.close();
