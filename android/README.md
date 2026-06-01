@@ -83,14 +83,14 @@ into generated assets. Edit the web app in the parent folder, then rebuild the b
 
 ## Play Billing (Pro IAP)
 
-This scaffold **does not** include Billing Library code. You still need to:
+The app ships **Billing Library 7** and **Google Sign-In** for restore:
 
-1. Add Google Play Billing dependency and `BillingClient` flow for product id **`ascension_pro_unlock`**.
-2. After a verified purchase or restore, call JS:  
-   `ascensionGrantProEntitlement(true)`  
-   (e.g. `WebView.evaluateJavascript`).
+1. In Play Console → **Monetize → Products**, create a **managed (one-time)** in-app product with ID **`ascension_pro_unlock`** priced at **$4.99** (must match exactly).
+2. Add license testers under **Setup → License testing** while testing purchases.
+3. After purchase or restore, native code calls `ascensionGrantProEntitlement(true)` in the WebView.
+4. Title menu: **Sign in with Google** then **Restore purchase** (same Google Play account as the original buy).
 
-Optional: implement `window.AscensionPlayBilling.purchasePro` / `restorePurchases` via `@JavascriptInterface`.
+JS bridge: `window.AscensionPlayBilling.purchasePro` / `restorePurchases`, `window.AscensionGoogleAuth.signIn`.
 
 ## Icons
 

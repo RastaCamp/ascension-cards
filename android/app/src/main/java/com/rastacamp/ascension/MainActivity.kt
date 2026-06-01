@@ -12,12 +12,19 @@ import androidx.appcompat.app.AppCompatActivity
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
+    private lateinit var billingBridge: PlayBillingBridge
+    private lateinit var googleAuth: GoogleAuthBridge
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         webView = WebView(this)
         setContentView(webView)
+
+        billingBridge = PlayBillingBridge(this, webView)
+        googleAuth = GoogleAuthBridge(this, webView)
+        googleAuth.registerLauncher()
+        billingBridge.start()
 
         webView.webChromeClient = WebChromeClient()
         webView.webViewClient = object : WebViewClient() {
@@ -40,6 +47,8 @@ class MainActivity : AppCompatActivity() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             s.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         }
+
+        webView.attachAscensionBridges(billingBridge, googleAuth)
 
         // Enables Play-only Pro IAP gate (see index.html ascension_play=1)
         webView.loadUrl("file:///android_asset/index.html?ascension_play=1")

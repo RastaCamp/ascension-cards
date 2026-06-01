@@ -9,6 +9,13 @@
   />
   <meta name="theme-color" content="#0a0612" id="metaThemeColor" />
   <title>Ascension — Card Oracle</title>
+  <!--
+    Google Play WebView loads: index.html?ascension_play=1 (see android/ project) or inject:
+    <script>window.__ASCENSION_PLAY_BUILD__=true</script>
+    Play Console → In-app products: create a managed (one-time) product with ID exactly:
+    ascension_pro_unlock   (price e.g. $4.99). Implement Android BillingClient and call
+    ascensionGrantProEntitlement(true) from JS after purchase/restore is verified.
+  -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -41,7 +48,13 @@
         }
       } catch (e4) {}
       try {
-        if (localStorage.getItem("ascension_pro_mode") === "1") {
+        var _playBuild =
+          (typeof window.__ASCENSION_PLAY_BUILD__ === "boolean" && window.__ASCENSION_PLAY_BUILD__ === true) ||
+          /(?:^|[?&])ascension_play=1(?:&|$)/.test(window.location.search || "");
+        var _entitled = localStorage.getItem("ascension_pro_entitled") === "1";
+        if (_playBuild && !_entitled) {
+          document.documentElement.setAttribute("data-pro", "0");
+        } else if (localStorage.getItem("ascension_pro_mode") === "1") {
           document.documentElement.setAttribute("data-pro", "1");
         } else {
           document.documentElement.setAttribute("data-pro", "0");
@@ -629,6 +642,18 @@
       border-color: rgba(240, 215, 140, 0.45);
       color: var(--gold);
       background: linear-gradient(135deg, rgba(196, 165, 255, 0.12), rgba(240, 215, 140, 0.1));
+    }
+
+    .hub-pro-restore {
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.55rem 0.85rem;
+      border-style: dashed;
+      opacity: 0.92;
+    }
+
+    .hub-pro-restore:hover {
+      opacity: 1;
     }
 
     .is-pro-only,
@@ -2611,7 +2636,6 @@
       </div>
       <button type="button" class="intro-enter" id="introEnter">Enter the oracle</button>
       <button type="button" class="intro-skip" id="introSkip">Skip — go straight in</button>
-      <p class="intro-hint"><kbd>Enter</kbd> to begin · <kbd>Esc</kbd> to skip</p>
     </div>
   </div>
 
@@ -2709,9 +2733,16 @@
         <a href="#records" class="hub-card">🏆 Records &amp; achievements</a>
         <button type="button" class="hub-card" id="btnOpenSettings">⚙ Settings</button>
         <button type="button" class="hub-card hub-pro" id="btnPro" aria-pressed="false" title="Show or hide Master-level content in the grimoire and the Master level button on this screen">Pro: off</button>
+        <button type="button" class="hub-card hub-pro hub-pro-restore" id="btnProRestore" style="display: none" hidden>
+          Restore purchase
+        </button>
+        <button type="button" class="hub-card hub-google" id="btnGoogleSignIn" style="display: none" hidden>
+          Sign in with Google
+        </button>
       </nav>
+      <p id="googleAccountLine" style="display: none; margin: 0.65rem 0 0; font-size: 0.88rem; opacity: 0.9; text-align: center"></p>
       <div class="hub-foot">
-        <p style="margin:0 0 0.35rem">Standalone Ascension — any modern browser · no server · data stays on <strong>this device</strong></p>
+        <p style="margin:0 0 0.35rem">Ascension runs in your browser or as the Android app — no game server · progress stays on <strong>this device</strong> (export JSON from Master level to move data)</p>
         <p style="margin:0">
           <button type="button" id="btnReplayIntro">Replay opening</button>
           ·
@@ -2735,7 +2766,23 @@
             <strong>Ascension</strong> is a single HTML file: a <strong>three-card oracle</strong> for practicing first impressions, and a <strong>grimoire</strong> with a guided path (P1–P6), a <a href="#grimoire-toolkit" style="color:var(--teal);font-weight:600">session toolkit</a> (breath, copy lines, checklist, log, tips), and <a href="#grimoire-curated-reading" style="color:var(--teal);font-weight:600">further reading</a> links. Everything runs in your browser — no account, no server.
           </p>
           <p>
-            The <strong>opening splash</strong> shows once per browser tab session (until you close the tab). Use <strong>Replay opening</strong> on the <strong>title menu</strong> to see it again. <strong>Exit</strong> (top-right), <kbd>Esc</kbd>, or <em>Skip</em> bypasses the fade if you’re in a hurry.
+            The <strong>opening splash</strong> shows once per browser tab session (until you close the tab). Use <strong>Replay opening</strong> on the <strong>title menu</strong> to see it again. Tap <strong>Exit</strong> (top-right) or <em>Skip</em> to bypass the fade if you’re in a hurry.
+          </p>
+
+          <h3>Playing on PC or online (browser)</h3>
+          <p>
+            Open Ascension in <strong>Chrome</strong>, <strong>Edge</strong>, or <strong>Firefox</strong> on a computer, or host the page at a URL you control. Use the <strong>mouse</strong> or <strong>trackpad</strong> — tap or click cards and buttons. There is no separate login on the web; <strong>Pro: on / off</strong> on the title menu toggles Master content for free in the browser.
+          </p>
+          <ul>
+            <li><strong>Play the game</strong> — three-card Queen trainer (Basic or Suit combo).</li>
+            <li><strong>Pro: on</strong> — shows <strong>Master level</strong> (five-card) and extended grimoire sections.</li>
+            <li><strong>Grimoire &amp; help</strong> — guided path, session toolkit, and this help panel.</li>
+            <li>Scores and journal text live in that browser’s storage. Use <strong>Master level → Data &amp; tools → Export</strong> before switching computers or clearing site data.</li>
+          </ul>
+
+          <h3>Playing on Android (Google Play app)</h3>
+          <p>
+            The Play build bundles the same page offline in a WebView. <strong>Master level</strong> is a one-time <strong>$4.99</strong> unlock (<code>ascension_pro_unlock</code> in Play Console). Sign in with <strong>Google</strong> on the title menu, then use <strong>Restore purchase</strong> on the same Google Play account if you reinstall or change phones.
           </p>
 
           <h3>Reading order</h3>
@@ -2750,7 +2797,7 @@
             <li>Three face cards (Queen of Spades, Hearts, Diamonds) flash face-up, turn to backs, then <strong>swap positions</strong> with sliding motion for a few seconds.</li>
             <li><strong>Basic:</strong> click the card you think is the <strong>Queen of Spades</strong>.</li>
             <li><strong>Suit combo:</strong> after a correct Spades pick, click the Queen of <strong>Hearts</strong> or <strong>Diamonds</strong> as instructed — no second shuffle.</li>
-            <li><strong>New round</strong> starts the sequence again (also <kbd>N</kbd> when not typing in the session log or other fields).</li>
+            <li><strong>New round</strong> starts the sequence again (tap the button on the game screen).</li>
           </ul>
 
           <h3>HUD</h3>
@@ -2768,15 +2815,8 @@
 
           <h3>Session toolkit</h3>
           <p>
-            <a href="#grimoire-toolkit" style="color:var(--teal);font-weight:600">Session toolkit, tips &amp; ethics</a> in the grimoire: 4-2-6 <strong>breath</strong> (use <kbd>Esc</kbd> to stop while running), <strong>copy</strong> buttons for short lines, <strong>prep checklist</strong> and <strong>session log</strong> (local storage on this device only), plus rotating <strong>tips</strong> and a short <strong>ethics</strong> blurb. You can also reach it from links on the <strong>game</strong> screen.
+            <a href="#grimoire-toolkit" style="color:var(--teal);font-weight:600">Session toolkit, tips &amp; ethics</a> in the grimoire: 4-2-6 <strong>breath</strong> (tap <strong>Stop</strong> on the breath control while running), <strong>copy</strong> buttons for short lines, <strong>prep checklist</strong> and <strong>session log</strong> (local storage on this device only), plus rotating <strong>tips</strong> and a short <strong>ethics</strong> blurb. You can also reach it from links on the <strong>game</strong> screen.
           </p>
-
-          <h3>Keyboard (when not typing in the session log)</h3>
-          <ul>
-            <li><kbd>N</kbd> — new round (same as the button)</li>
-            <li><kbd>?</kbd> or <kbd>Shift</kbd>+<kbd>/</kbd> — shortcut help inside the game panel</li>
-            <li><kbd>Esc</kbd> — stop breath timer; when <strong>Settings</strong> is open, closes Settings first</li>
-          </ul>
 
           <h3>Appearance &amp; settings</h3>
           <p>
@@ -3194,7 +3234,6 @@
         <div class="queen-card-row" id="queenCardRow" role="group" aria-label="Three cards"></div>
         <div class="controls">
           <button type="button" class="btn" id="btnDeal">🔀 New round</button>
-          <button type="button" class="btn btn-ghost" id="btnShortcuts" title="Keyboard shortcuts">⌨️ Keys</button>
         </div>
         <div class="result-box" id="resultBox" role="status">
           Same trainer as the main app: three Queens are shown, then backs shuffle in place. Pick the Queen of Spades. <strong>Suit combo</strong> adds a second Queen to find without reshuffling.
@@ -3204,9 +3243,6 @@
         </p>
         <p class="howto" style="margin-top:0.55rem">
           Breath, checklist, session log, and tips: <a href="#grimoire-toolkit" style="color:var(--teal);font-weight:600">Grimoire &amp; help</a> (session toolkit) · <a href="#grimoire-curated-reading" style="color:var(--teal);font-weight:600">Further reading</a>.
-        </p>
-        <p class="howto" style="margin-top:0.35rem">
-          <span id="keysHint" style="opacity:0.85">Shortcuts: <kbd>N</kbd> new round · <kbd>?</kbd> keyboard help</span>
         </p>
       </section>
     </div>
@@ -3287,11 +3323,11 @@
         <div class="controls">
           <button type="button" class="btn" id="btnProRound">🔀 New round</button>
         </div>
-        <div class="result-box" id="proResultBox" role="status" aria-live="polite">Five unique cards (three Queens, Queen of Clubs, and a Joker). The game master names a <strong>sequence</strong> of all five: you have four steps to <strong>find the next card</strong> on the board. Correct picks are marked off; after four, one card is left and the win is clear. Face art uses <code>cards/queen of clubs.PNG</code>; each new round picks <code>cards/joker.PNG</code> or <code>cards/jokers.PNG</code> at random for the Joker. Placeholder text appears if an image fails to load. <kbd>N</kbd> starts a new round (when not typing in a field).</div>
+        <div class="result-box" id="proResultBox" role="status" aria-live="polite">Five unique cards (three Queens, Queen of Clubs, and a Joker). The game master names a <strong>sequence</strong> of all five: you have four steps to <strong>find the next card</strong> on the board. Correct picks are marked off; after four, one card is left and the win is clear. Face art uses <code>cards/queen of clubs.PNG</code>; each new round picks <code>cards/joker.PNG</code> or <code>cards/jokers.PNG</code> at random for the Joker. Placeholder text appears if an image fails to load. Tap <strong>New round</strong> to start another descent.</div>
       </div>
 
-      <div id="pro-utils" class="pro-utils" aria-label="Data, backup, and shortcuts">
-        <h2>Data, backup &amp; Pro shortcuts</h2>
+      <div id="pro-utils" class="pro-utils" aria-label="Data and backup">
+        <h2>Data &amp; backup</h2>
         <p class="howto" style="margin:0 0 0.55rem">Everything below uses only this browser. <strong>Export a JSON backup</strong> before changing devices, clearing site data, or if you use <strong>Reset</strong> on the title (which will also clear Pro stats with the same confirm).</p>
         <div class="pro-tool-row copy-row">
           <button type="button" class="btn btn-ghost" id="btnProCopyUrl">Copy link to Master level</button>
@@ -3736,20 +3772,6 @@
         renderRecordsUi();
       });
 
-      function shortcutsHelp() {
-        const sc = document.documentElement.getAttribute("data-app-screen");
-        if (sc === "pro") {
-          const prb = document.getElementById("proResultBox");
-          if (prb) {
-            prb.innerHTML =
-              "<strong>Pro screen</strong> · <kbd>N</kbd> new five-card round · <kbd>?</kbd> this help · <kbd>Esc</kbd> closes Settings if open. Three-card help lives on the main game screen.";
-          }
-          return;
-        }
-        resultBox.innerHTML =
-          "<strong>Keyboard</strong> (when not typing in the grimoire session log): <kbd>N</kbd> new round · <kbd>?</kbd> this panel · <kbd>Esc</kbd> stops the breath timer (session toolkit is in the grimoire). On the <strong>Pro</strong> screen, <kbd>N</kbd> and <kbd>?</kbd> apply to the five-card trainer only.";
-      }
-
       const queenCardRow = document.getElementById("queenCardRow");
       const phaseMsg = document.getElementById("phaseMsg");
       const resultBox = document.getElementById("resultBox");
@@ -4115,31 +4137,6 @@
         startNewRound();
       });
 
-      document.getElementById("btnShortcuts").addEventListener("click", shortcutsHelp);
-
-      document.addEventListener("keydown", (e) => {
-        const t = document.activeElement;
-        if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT")) return;
-        if (e.key === "?" || (e.shiftKey && e.key === "/")) {
-          e.preventDefault();
-          shortcutsHelp();
-        }
-        if (e.key === "n" || e.key === "N") {
-          const sc = document.documentElement.getAttribute("data-app-screen");
-          if (sc === "pro") {
-            e.preventDefault();
-            const p = document.getElementById("btnProRound");
-            if (p) p.click();
-            return;
-          }
-          if (sc !== "game") return;
-          sessionRound += 1;
-          roundEl.textContent = String(sessionRound);
-          startNewRound();
-        }
-        if (e.key === "Escape" && breathRunning) btnBreath.click();
-      });
-
       function openGrimoireFromHash() {
         const h = location.hash;
         if (h.startsWith("#grimoire-") || h === "#page-help") {
@@ -4502,8 +4499,104 @@
   </script>
   <script>
     (function () {
+      /**
+       * Google Play In-app product ID (create under this app in Play Console → Monetize → Products).
+       * IDs are unique per package name only; they do not collide with other apps.
+       * Type: Managed product (one-time), price e.g. $4.99 — product ID must match exactly.
+       */
+      var ASCENSION_PLAY_IAP_PRODUCT_ID = "ascension_pro_unlock";
       var KEY = "ascension_pro_mode";
+      var KEY_ENTITLED = "ascension_pro_entitled";
+      var KEY_GOOGLE = "ascension_google_email";
       var btn = document.getElementById("btnPro");
+      var btnRestore = document.getElementById("btnProRestore");
+      var btnGoogle = document.getElementById("btnGoogleSignIn");
+      var googleLine = document.getElementById("googleAccountLine");
+
+      function isPlayBuild() {
+        return (
+          (typeof window.__ASCENSION_PLAY_BUILD__ === "boolean" && window.__ASCENSION_PLAY_BUILD__ === true) ||
+          /(?:^|[?&])ascension_play=1(?:&|$)/.test(window.location.search || "")
+        );
+      }
+
+      function isEntitled() {
+        try {
+          if (!isPlayBuild()) return true;
+          return localStorage.getItem(KEY_ENTITLED) === "1";
+        } catch (e) {
+          return !isPlayBuild();
+        }
+      }
+
+      function syncPlayAccountChrome() {
+        if (!isPlayBuild()) {
+          if (btnGoogle) {
+            btnGoogle.style.display = "none";
+            btnGoogle.setAttribute("hidden", "hidden");
+          }
+          if (googleLine) googleLine.style.display = "none";
+          return;
+        }
+        if (btnGoogle) {
+          btnGoogle.style.display = "";
+          btnGoogle.removeAttribute("hidden");
+        }
+        var email = null;
+        try {
+          email = localStorage.getItem(KEY_GOOGLE);
+        } catch (e) {}
+        if (googleLine) {
+          googleLine.style.display = "";
+          if (email) {
+            googleLine.textContent =
+              "Signed in as " + email + ". Restore purchase uses this device\u2019s Google Play account.";
+            if (btnGoogle) btnGoogle.textContent = "Switch Google account";
+          } else {
+            googleLine.textContent =
+              "Sign in with Google on this device before Restore purchase so the correct Play account is used.";
+            if (btnGoogle) btnGoogle.textContent = "Sign in with Google";
+          }
+        }
+      }
+
+      window.ascensionOnGoogleAccount = function (email) {
+        try {
+          if (email) localStorage.setItem(KEY_GOOGLE, email);
+          else localStorage.removeItem(KEY_GOOGLE);
+        } catch (e) {}
+        syncPlayAccountChrome();
+      };
+
+      function syncProChrome() {
+        syncPlayAccountChrome();
+        if (!btn) return;
+        if (isPlayBuild() && !isEntitled()) {
+          btn.textContent = "Unlock Master — $4.99";
+          btn.setAttribute("aria-pressed", "false");
+          btn.setAttribute(
+            "title",
+            "One-time purchase. Unlocks Master level and Pro grimoire content on this device after Google Play confirms payment.",
+          );
+          if (btnRestore) {
+            btnRestore.style.display = "";
+            btnRestore.removeAttribute("hidden");
+          }
+          return;
+        }
+        if (btnRestore) {
+          btnRestore.style.display = "none";
+          btnRestore.setAttribute("hidden", "hidden");
+        }
+        var on = document.documentElement.getAttribute("data-pro") === "1";
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.textContent = on ? "Pro: on" : "Pro: off";
+        btn.setAttribute(
+          "title",
+          "Show or hide Master-level content in the grimoire and the Master level button on this screen",
+        );
+      }
+
       function goTitleIfProHash() {
         if (document.documentElement.getAttribute("data-pro") === "1") return;
         var h = (location.hash || "").replace(/^#/, "");
@@ -4515,24 +4608,87 @@
           }
         }
       }
+
       function setProState(on) {
+        if (isPlayBuild() && !isEntitled()) return;
         document.documentElement.setAttribute("data-pro", on ? "1" : "0");
         try {
           localStorage.setItem(KEY, on ? "1" : "0");
         } catch (e) {}
-        if (btn) {
-          btn.setAttribute("aria-pressed", on ? "true" : "false");
-          btn.textContent = on ? "Pro: on" : "Pro: off";
-        }
+        syncProChrome();
         if (!on) goTitleIfProHash();
       }
+
+      /**
+       * Call from Android after BillingClient confirms purchase or restore (non-consumable owned).
+       * Example: webView.evaluateJavascript("(window.ascensionGrantProEntitlement&&ascensionGrantProEntitlement(true))", null);
+       */
+      window.ascensionGrantProEntitlement = function (granted) {
+        if (!granted) return;
+        try {
+          localStorage.setItem(KEY_ENTITLED, "1");
+          localStorage.setItem(KEY, "1");
+        } catch (e) {}
+        document.documentElement.setAttribute("data-pro", "1");
+        syncProChrome();
+        try {
+          if (window.ascensionAudio && window.ascensionAudio.syncNavigation) window.ascensionAudio.syncNavigation();
+        } catch (e2) {}
+      };
+
+      window.ascensionPlayIapProductId = ASCENSION_PLAY_IAP_PRODUCT_ID;
+
       if (btn) {
         btn.addEventListener("click", function () {
+          if (isPlayBuild() && !isEntitled()) {
+            if (window.AscensionPlayBilling && typeof window.AscensionPlayBilling.purchasePro === "function") {
+              window.AscensionPlayBilling.purchasePro(ASCENSION_PLAY_IAP_PRODUCT_ID);
+            } else {
+              window.alert(
+                "Billing is not connected. The Android app must implement window.AscensionPlayBilling.purchasePro(\"" +
+                  ASCENSION_PLAY_IAP_PRODUCT_ID +
+                  "\").",
+              );
+            }
+            return;
+          }
           setProState(document.documentElement.getAttribute("data-pro") !== "1");
         });
-        var onInit = document.documentElement.getAttribute("data-pro") === "1";
-        btn.setAttribute("aria-pressed", onInit);
-        btn.textContent = onInit ? "Pro: on" : "Pro: off";
+        if (btnRestore) {
+          btnRestore.addEventListener("click", function () {
+            var signedIn = false;
+            try {
+              signedIn = !!localStorage.getItem(KEY_GOOGLE);
+            } catch (e) {}
+            if (isPlayBuild() && !signedIn) {
+              if (
+                window.confirm(
+                  "Sign in with Google first so Restore uses the correct Play account. Open Google sign-in now?",
+                )
+              ) {
+                if (window.AscensionGoogleAuth && typeof window.AscensionGoogleAuth.signIn === "function") {
+                  window.AscensionGoogleAuth.signIn();
+                }
+              }
+              return;
+            }
+            if (window.AscensionPlayBilling && typeof window.AscensionPlayBilling.restorePurchases === "function") {
+              window.AscensionPlayBilling.restorePurchases();
+            } else {
+              window.alert("Restore is not available in this build.");
+            }
+          });
+        }
+        if (btnGoogle) {
+          btnGoogle.addEventListener("click", function () {
+            if (window.AscensionGoogleAuth && typeof window.AscensionGoogleAuth.signIn === "function") {
+              window.AscensionGoogleAuth.signIn();
+            } else {
+              window.alert("Google sign-in is only available in the Android app.");
+            }
+          });
+        }
+        syncProChrome();
       }
     })();
   </script>
