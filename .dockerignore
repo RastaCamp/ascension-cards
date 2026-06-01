@@ -1,0 +1,16 @@
+.git
+.gitignore
+**/.DS_Store
+android/app/build
+android/build
+android/.gradle
+android/local.properties
+android/**/*.jks
+android/keystore.properties
+android/tools
+**/*.apk
+**/*.aab
+agent-transcripts
+.cursor
+site/
+.env

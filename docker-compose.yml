@@ -1,0 +1,32 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8765:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Optional: clean-room Android debug build (large image, first run downloads SDK).
+  # Run: docker compose --profile android run --rm android-build
+  android-build:
+    profiles: ["android"]
+    image: thyrlian/android-sdk:latest
+    working_dir: /workspace/android
+    volumes:
+      - .:/workspace
+    environment:
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+    command: >
+      bash -lc "
+        set -e
+        if [ ! -f gradlew ]; then
+          echo 'ERROR: android/gradlew missing. Run: docker run --rm -v \"$$(pwd)/android:/project\" -w /project gradle:8.9-jdk17 gradle wrapper'
+          exit 1
+        fi
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon --stacktrace
+      "
