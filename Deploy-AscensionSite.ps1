@@ -1,6 +1,6 @@
 #Requires -Version 5.1
 <#
-  Builds site/ from index.html + cards/ + audio/ and deploys to Cloudflare Pages (project: ascension).
+  Builds site/ from index.html + cards/ + audio/ and deploys to Cloudflare Pages (project: ascensions).
   Requires: npm/npx wrangler, and either wrangler login OR CLOUDFLARE_API_TOKEN in .env / environment.
 
   Usage:
@@ -48,13 +48,14 @@ if ($env:CLOUDFLARE_ACCOUNT_ID) {
   $accountArg = @("--account-id", $env:CLOUDFLARE_ACCOUNT_ID)
 }
 
-Write-Host ">>> wrangler pages deploy site --project-name=ascension" -ForegroundColor Cyan
+Write-Host ">>> wrangler pages deploy site --project-name=ascensions" -ForegroundColor Cyan
 Push-Location $Root
 try {
-  npx --yes wrangler@4 pages deploy site --project-name=ascension @accountArg --branch=main --commit-dirty=true
+  npx --yes wrangler@4 pages deploy site --project-name=ascensions @accountArg --branch=main --commit-dirty=true
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   Write-Host ""
-  Write-Host "Deployed. Check https://ascension.rastacamp.com/ (may take a minute; hard-refresh if cached)." -ForegroundColor Green
+  Write-Host "Deployed. Add custom domain ascensions.rastacamp.com in Pages settings if not already." -ForegroundColor Green
+  Write-Host "Then open https://ascensions.rastacamp.com/ (hard-refresh if cached)." -ForegroundColor Green
 }
 finally {
   Pop-Location
